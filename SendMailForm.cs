@@ -30,8 +30,7 @@ namespace SendMailThue
             InitializeComponent();
             companiesLoading.Visible = false;
             companyEmailsLoading.Visible = false;
-            LoadCompanyEmailFromFile();
-            UpdateForDonDocWordFileUI();
+          
         }
 
         private void LoadCompaniesFromFile() {
@@ -162,6 +161,11 @@ namespace SendMailThue
             }
             companyEmailFile = fileList[0];
             Storage.CompanyEmailFile = companyEmailFile;
+            StartLoadCompanyEmailFromFile();
+        }
+
+        void StartLoadCompanyEmailFromFile()
+        {
             Thread trd = new Thread(new ThreadStart(this.LoadCompanyEmailFromFile));
             trd.IsBackground = true;
             trd.Start();
@@ -179,7 +183,8 @@ namespace SendMailThue
 
         private void SendMailForm_Load(object sender, EventArgs e)
         {
-
+            StartLoadCompanyEmailFromFile();
+            UpdateForDonDocWordFileUI();
         }
 
         private void btnKillExcelProcess_Click(object sender, EventArgs e)
