@@ -12,10 +12,6 @@ namespace SendMailThue
         public String DaDongDenThang { get; set; }
         public int TongSoThangNo { get; set; }
         public String Email { get; set; }
-
-        public String Excel { get; set; }
-        public String Word { get; set; }
-
         public bool AttachWord { get; set; }
         public bool AttachExcel { get; set; }
     }

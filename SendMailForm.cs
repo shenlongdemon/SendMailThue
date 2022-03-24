@@ -30,17 +30,16 @@ namespace SendMailThue
             InitializeComponent();
             companiesLoading.Visible = false;
             companyEmailsLoading.Visible = false;
-          
         }
 
         private void LoadCompaniesFromFile() {
             showCompanyLoading(true);
-            companies = CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile);
-            showCompanyLoading(false);
-            MMapMailCompany();
+           CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile, (result) => {
+               companies = result;
+               showCompanyLoading(false);
+               MMapMailCompany();
+           });
         }
-
-   
 
         private void LoadCompanyEmailFromFile()
         {
@@ -48,7 +47,6 @@ namespace SendMailThue
             companyEmails = CompanyUtils.GetCompanyEmailsFromFile(companyEmailFile);
             showCompanyEmailsLoading(false);
             MMapMailCompany();
-        
         }
 
         private void MMapMailCompany()
@@ -98,12 +96,12 @@ namespace SendMailThue
             {
                 btnWordonDoc.BackColor = Color.DodgerBlue;
                 btnWordonDoc.ForeColor = Color.White;
-                btnWordonDoc.Text = Path.GetFileName(donDocWordFile);
+                btnWordonDoc.Text = Path.GetFullPath(donDocWordFile);
             }
             else {
                 btnWordonDoc.BackColor = Color.Red;
                 btnWordonDoc.ForeColor = Color.White;
-                btnWordonDoc.Text = "Kéo thả file \"Đôn đốc\" vào đây";
+                btnWordonDoc.Text = "Kéo thả file word \"Đôn đốc\" vào đây";
             }
         }
 
@@ -119,9 +117,13 @@ namespace SendMailThue
             this.dgvCompany.DataSource = new BindingSource(companies, "");
             this.dgvCompany.Columns["TenDonVi"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Format = "#,##0";
+            this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Format = Utility.MoneyFormat;
+            this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Font = new Font("Tahoma", 12) ;
+            this.dgvCompany.Columns["TongNo"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+
             this.dgvCompany.Columns["DaDongDenThang"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             this.dgvCompany.Columns["TongSoThangNo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            this.dgvCompany.Columns["TongSoThangNo"].DefaultCellStyle.Font = new Font("Tahoma", 12);
         } 
         void UpdateCompanyEmailsDataSource()
         {
@@ -171,44 +173,11 @@ namespace SendMailThue
             trd.Start();
         }
 
-        private void dgvCompany_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.All;
-        }
-
-        private void dgvEmail_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.All;
-        }
-
+      
         private void SendMailForm_Load(object sender, EventArgs e)
         {
             StartLoadCompanyEmailFromFile();
             UpdateForDonDocWordFileUI();
-        }
-
-        private void btnKillExcelProcess_Click(object sender, EventArgs e)
-        {
-            var excelProcesses = from p in Process.GetProcessesByName("EXCEL")
-                            select p;
-
-            foreach (var process in excelProcesses)
-            {
-                    process.Kill();
-            }
-            
-            var wordProcesses = from p in Process.GetProcessesByName("WINWORD")
-                            select p;
-
-            foreach (var process in wordProcesses)
-            {
-                    process.Kill();
-            }
-        }
-
-        private void txtSendWordCodition_TextChanged(object sender, EventArgs e)
-        {
-            
         }
 
         private void dgvCompany_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -232,45 +201,6 @@ namespace SendMailThue
                 else if (isAttachWord) {
                     oRow.DefaultCellStyle.BackColor = Color.FromArgb(179, 217, 255);
                 }
-                
-            }
-
-       
-        }
-
-        
-
-        private void btnSendMail_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void btnOpenGuild_Click(object sender, EventArgs e)
-        {
-            //GuidForm gf = new GuidForm();
-            //gf.Show();
-            GoogleLogin();
-        }
-
-        private async Task<string> GoogleLogin() 
-        {
-            string token = await GoogleAuth.Login(this);
-            return token;
-        }
-
-        private void txtSendExcelCodition_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)13)
-            {
-                ApplyCondition();
-            }
-        }
-
-        private void txtSendWordCodition_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)13)
-            {
-                ApplyCondition();
             }
         }
 
@@ -278,6 +208,10 @@ namespace SendMailThue
         {
             foreach (Company company in companies)
             {
+                if (company.Email.Trim() == "")
+                {
+                    continue;
+                }
                 bool attachExcel = false;
                 try
                 {
@@ -299,6 +233,8 @@ namespace SendMailThue
             UpdateCompaniesDataSource();
         }
 
+        #region ignore
+
         private void btnWordonDoc_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.All;
@@ -315,5 +251,84 @@ namespace SendMailThue
             Storage.DonDocWordFile = donDocWordFile;
             UpdateForDonDocWordFileUI();
         }
+
+        private void companiesLoading_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private async Task<string> GoogleLogin()
+        {
+            string token = await GoogleAuth.Login(this);
+            return token;
+        }
+
+        private void txtSendExcelCodition_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                ApplyCondition();
+            }
+        }
+
+        private void txtSendWordCodition_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                ApplyCondition();
+            }
+        }
+
+        private void dgvCompany_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.All;
+        }
+
+        private void dgvEmail_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.All;
+        }
+
+        private void btnKillExcelProcess_Click(object sender, EventArgs e)
+        {
+            var excelProcesses = from p in Process.GetProcessesByName("EXCEL")
+                                 select p;
+
+            foreach (var process in excelProcesses)
+            {
+                process.Kill();
+            }
+
+            var wordProcesses = from p in Process.GetProcessesByName("WINWORD")
+                                select p;
+
+            foreach (var process in wordProcesses)
+            {
+                process.Kill();
+            }
+        }
+
+        private void txtSendWordCodition_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
+
+        private void btnSendMail_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnOpenGuild_Click(object sender, EventArgs e)
+        {
+            //GuidForm gf = new GuidForm();
+            //gf.Show();
+            GoogleLogin();
+        }
+
+
+        #endregion
+
     }
 }

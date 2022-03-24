@@ -46,7 +46,6 @@ namespace SendMailThue
             this.label2 = new System.Windows.Forms.Label();
             this.companiesLoading = new AnimOfDots.Circular();
             this.companyEmailsLoading = new AnimOfDots.Circular();
-            this.btnOpenGuild = new System.Windows.Forms.Button();
             this.btnWordonDoc = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvEmail)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCompany)).BeginInit();
@@ -62,7 +61,7 @@ namespace SendMailThue
             this.dgvEmail.Name = "dgvEmail";
             this.dgvEmail.RowHeadersWidth = 51;
             this.dgvEmail.RowTemplate.Height = 29;
-            this.dgvEmail.Size = new System.Drawing.Size(239, 635);
+            this.dgvEmail.Size = new System.Drawing.Size(273, 635);
             this.dgvEmail.TabIndex = 2;
             this.dgvEmail.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvEmail_DragDrop);
             this.dgvEmail.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvEmail_DragEnter);
@@ -82,11 +81,11 @@ namespace SendMailThue
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dgvCompany.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvCompany.Location = new System.Drawing.Point(257, 153);
+            this.dgvCompany.Location = new System.Drawing.Point(291, 153);
             this.dgvCompany.Name = "dgvCompany";
             this.dgvCompany.RowHeadersWidth = 51;
             this.dgvCompany.RowTemplate.Height = 29;
-            this.dgvCompany.Size = new System.Drawing.Size(1131, 635);
+            this.dgvCompany.Size = new System.Drawing.Size(1097, 635);
             this.dgvCompany.TabIndex = 3;
             this.dgvCompany.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvCompany_CellFormatting);
             this.dgvCompany.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvCompany_DragDrop);
@@ -111,9 +110,9 @@ namespace SendMailThue
             this.groupBox2.Controls.Add(this.label5);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.txtSendWordCodition);
-            this.groupBox2.Location = new System.Drawing.Point(511, 13);
+            this.groupBox2.Location = new System.Drawing.Point(277, 13);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(738, 112);
+            this.groupBox2.Size = new System.Drawing.Size(972, 112);
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Info";
@@ -148,12 +147,14 @@ namespace SendMailThue
             // 
             // btnKillExcelProcess
             // 
-            this.btnKillExcelProcess.Location = new System.Drawing.Point(601, 0);
+            this.btnKillExcelProcess.BackColor = System.Drawing.Color.Red;
+            this.btnKillExcelProcess.ForeColor = System.Drawing.Color.White;
+            this.btnKillExcelProcess.Location = new System.Drawing.Point(693, 0);
             this.btnKillExcelProcess.Name = "btnKillExcelProcess";
-            this.btnKillExcelProcess.Size = new System.Drawing.Size(134, 29);
+            this.btnKillExcelProcess.Size = new System.Drawing.Size(238, 43);
             this.btnKillExcelProcess.TabIndex = 12;
-            this.btnKillExcelProcess.Text = "Tắt tất cả Excell";
-            this.btnKillExcelProcess.UseVisualStyleBackColor = true;
+            this.btnKillExcelProcess.Text = "Tắt tất cả Excell và Word";
+            this.btnKillExcelProcess.UseVisualStyleBackColor = false;
             this.btnKillExcelProcess.Click += new System.EventHandler(this.btnKillExcelProcess_Click);
             // 
             // label5
@@ -187,16 +188,16 @@ namespace SendMailThue
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(94, 130);
+            this.label1.Location = new System.Drawing.Point(12, 130);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(46, 20);
+            this.label1.Size = new System.Drawing.Size(274, 20);
             this.label1.TabIndex = 7;
-            this.label1.Text = "Email";
+            this.label1.Text = "Kéo thả file \"Email\" vào khung bên dưới";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(583, 130);
+            this.label2.Location = new System.Drawing.Point(344, 128);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(54, 20);
             this.label2.TabIndex = 8;
@@ -207,43 +208,34 @@ namespace SendMailThue
             this.companiesLoading.AnimationSpeed = ((byte)(60));
             this.companiesLoading.BackColor = System.Drawing.Color.White;
             this.companiesLoading.IsEnabled = false;
-            this.companiesLoading.Location = new System.Drawing.Point(766, 394);
+            this.companiesLoading.Location = new System.Drawing.Point(801, 394);
             this.companiesLoading.Name = "companiesLoading";
             this.companiesLoading.Size = new System.Drawing.Size(155, 118);
             this.companiesLoading.TabIndex = 9;
             this.companiesLoading.Visible = false;
+            this.companiesLoading.Load += new System.EventHandler(this.companiesLoading_Load);
             // 
             // companyEmailsLoading
             // 
             this.companyEmailsLoading.AnimationSpeed = ((byte)(60));
             this.companyEmailsLoading.BackColor = System.Drawing.Color.White;
             this.companyEmailsLoading.IsEnabled = false;
-            this.companyEmailsLoading.Location = new System.Drawing.Point(55, 394);
+            this.companyEmailsLoading.Location = new System.Drawing.Point(45, 394);
             this.companyEmailsLoading.Name = "companyEmailsLoading";
             this.companyEmailsLoading.Size = new System.Drawing.Size(155, 118);
             this.companyEmailsLoading.TabIndex = 10;
             this.companyEmailsLoading.Visible = false;
-            // 
-            // btnOpenGuild
-            // 
-            this.btnOpenGuild.Location = new System.Drawing.Point(12, 24);
-            this.btnOpenGuild.Name = "btnOpenGuild";
-            this.btnOpenGuild.Size = new System.Drawing.Size(94, 89);
-            this.btnOpenGuild.TabIndex = 11;
-            this.btnOpenGuild.Text = "Hướng dẫn";
-            this.btnOpenGuild.UseVisualStyleBackColor = true;
-            this.btnOpenGuild.Click += new System.EventHandler(this.btnOpenGuild_Click);
             // 
             // btnWordonDoc
             // 
             this.btnWordonDoc.AllowDrop = true;
             this.btnWordonDoc.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             this.btnWordonDoc.ForeColor = System.Drawing.Color.White;
-            this.btnWordonDoc.Location = new System.Drawing.Point(303, 18);
+            this.btnWordonDoc.Location = new System.Drawing.Point(12, 12);
             this.btnWordonDoc.Name = "btnWordonDoc";
-            this.btnWordonDoc.Size = new System.Drawing.Size(188, 100);
+            this.btnWordonDoc.Size = new System.Drawing.Size(215, 103);
             this.btnWordonDoc.TabIndex = 12;
-            this.btnWordonDoc.Text = "Kéo thả file \"Đôn đốc\" vào đây";
+            this.btnWordonDoc.Text = "Kéo thả file word \"Đôn đốc\" vào đây";
             this.btnWordonDoc.UseVisualStyleBackColor = false;
             this.btnWordonDoc.DragDrop += new System.Windows.Forms.DragEventHandler(this.btnWordonDoc_DragDrop);
             this.btnWordonDoc.DragEnter += new System.Windows.Forms.DragEventHandler(this.btnWordonDoc_DragEnter);
@@ -255,7 +247,6 @@ namespace SendMailThue
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1400, 800);
             this.Controls.Add(this.btnWordonDoc);
-            this.Controls.Add(this.btnOpenGuild);
             this.Controls.Add(this.companyEmailsLoading);
             this.Controls.Add(this.companiesLoading);
             this.Controls.Add(this.label2);
@@ -294,7 +285,6 @@ namespace SendMailThue
         private AnimOfDots.Circular companyEmailsLoading;
         private System.Windows.Forms.Button btnKillExcelProcess;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button btnOpenGuild;
         private System.Windows.Forms.TextBox txtSendExcelCodition;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btnWordonDoc;

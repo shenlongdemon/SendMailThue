@@ -3,15 +3,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 
 namespace SendMailThue
 {
     public class CompanyUtils
     {
         private static readonly int EMPTY_ROWS_BETWEEN_DONVI = 30;
-        public static List<Company> GetCompaniesFromExcelFile(string excelFile, string donDocWordFile)
+        public static void GetCompaniesFromExcelFile(string excelFile, string donDocWordFile, Action<List<Company>> callback)
         {
-            List<Company> companies = new List<Company>();
             List<string> fields = new List<string>
                 {
                     "8_2", // ten don vi
@@ -22,24 +22,30 @@ namespace SendMailThue
             string excelSplitDir = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName) + @"\excels";
             string wordSplitDir = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName) + @"\words";
 
-            List<List<string>> groups = ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir);
-            foreach (List<string> groupValues in groups)
-            {
-                Company company = GetCompanyFromValues(groupValues);
-                if (company != null) {
-                    companies.Add(company);
+            ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir, (result) => {
+                List<Company> companies = new List<Company>();
+                foreach (List<string> groupValues in result)
+                {
+                    Company company = GetCompanyFromValues(groupValues);
+                    if (company != null)
+                    {
+                        companies.Add(company);
+                    }
                 }
-            }
-
-            HandleDonDocWordFile(donDocWordFile, companies, wordSplitDir);
-
-            return companies;
+                callback(companies);
+                var t = new Thread(() => {
+                    HandleDonDocWordFile(donDocWordFile, companies, wordSplitDir);
+                });
+                t.IsBackground = true;
+                t.Start();
+            });
         }
 
         private static void HandleDonDocWordFile(string donDocWordFile, List<Company> companies, string wordSplitDir)
         {
             List<List<string[]>> replaces = new List<List<string[]>>();
             DateTime now = DateTime.Now;
+            DateTime lastDateOfMonth = new DateTime (now.Year, now.Month,  DateTime.DaysInMonth(now.Year, now.Month));
             foreach (Company company in companies)
             {
                 List<string[]> replace = new List<string[]>();
@@ -47,15 +53,19 @@ namespace SendMailThue
                 replace.Add(new string[] { "{day}", now.Day + "" });
                 replace.Add(new string[] { "{month}", (now.Month + 1) + "" });
                 replace.Add(new string[] { "{year}", now.Year + "" });
-
-
+                replace.Add(new string[] { "{tendonvi}", company.TenDonVi + "" });
+                replace.Add(new string[] { "{now}", now.ToString("dd/MM/yyyy") });
+                replace.Add(new string[] { "{tongon}", Utility.FormatMoney(company.TongNo)});
+                replace.Add(new string[] { "{tongnobangchu}", Utility.ConvertMoneyToString(company.TongNo)});
+                replace.Add(new string[] { "{tongthangno}", company.TongSoThangNo + "" });
+                replace.Add(new string[] { "{lastdateofmonth}", lastDateOfMonth.ToString("dd/MM/yyyy") + "" });
                 replaces.Add(replace);
             }
             List<string> outs = WordUtils.Replace(donDocWordFile, wordSplitDir, replaces);
-            for (int i = 0; i < outs.Count; i++)
-            {
-                companies[i].Word = outs[i];
-            }
+            //for (int i = 0; i < outs.Count; i++)
+            //{
+            //    //companies[i].Word = outs[i];
+            //}
         }
 
         public static List<Company> GetCompaniesFromFiles(List<string> files)
@@ -109,8 +119,6 @@ namespace SendMailThue
                 TongNo = tongNo,
                 DaDongDenThang = month,
                 TongSoThangNo = tongThangNo,
-                Excel =  values[4],
-                Word =  "",
                 AttachExcel = false,
                 AttachWord = false,
             };

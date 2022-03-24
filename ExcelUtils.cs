@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 namespace SendMailThue
@@ -48,13 +49,11 @@ namespace SendMailThue
             return fieldValues;
         }
 
-        public static List<List<string>> GetGroupValuesByGroup(string file, List<string> fields, int spaceRowBetweenGroup, string outputDir)
+        public static void GetGroupValuesByGroup(string file, List<string> fields, int spaceRowBetweenGroup, string outputDir, Action<List<List<string>>> callback)
         {
             List<List<string>> groups = new List<List<string>>();
 
             FileUtils.CreateDir(outputDir, true);
-
-
 
             Excel.Application xlApp = null;
             Excel.Workbook xlWorkbook = null;
@@ -97,67 +96,43 @@ namespace SendMailThue
                         catch (Exception ex) { }
                         valueinGroup.Add(cellValue);
                     }
-
-
-                    Excel.Range startCell = xlWorksheet.Cells[rang[0], 1];//not sure the second parameter needed?
-                    Excel.Range endCell = xlWorksheet.Cells[rang[1], columnCount];//not sure the second parameter needed?
-
-                    Excel.Workbook workbook = xlApp.Workbooks.Add();
-                    Excel.Worksheet worksheet = workbook.Sheets.Add();
-                    Excel.Range rng = xlWorksheet.Range[startCell, endCell];
-                    Excel.Range rngDest = (Excel.Range)worksheet.Cells[1, 1];
-                    rng.Copy(rngDest);
-                    string outPath = outputDir + @"\out" + rang[0] + "_" + rang[1] + "";
-                    workbook.SaveAs(outPath, Excel.XlFileFormat.xlWorkbookNormal, System.Reflection.Missing.Value, System.Reflection.Missing.Value, false, false, Excel.XlSaveAsAccessMode.xlShared, false, false, System.Reflection.Missing.Value, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
-                    workbook.Close();
-                    valueinGroup.Add(outPath);
-                    //Excel.Range startCell = xlWorksheet.Cells[rang[0], 1];//not sure the second parameter needed?
-                    //Excel.Range endCell = xlWorksheet.Cells[rang[1], columnCount];//not sure the second parameter needed?
-
-                    //Excel.Range rng = xlWorksheet.Range[startCell, endCell];
-
-                    //var a = rng.CopyPicture(XlPictureAppearance.xlScreen, XlCopyPictureFormat.xlPicture);
-
-
-                    //string fileName = "";
-                    //var dataObj = Clipboard.GetDataObject();
-                    ////var dataObj1 = Clipboard.ContainsData(System.Windows..EnhancedMetafile);
-                    //var dataObj2 = Clipboard.GetImage();
-                    //var dataObj3 = Clipboard.ContainsImage();
-                    //var dataObj5 = Clipboard.GetFileDropList();
-
-                    //if (Clipboard.GetDataObject() != null)
-                    //{
-                    //    IDataObject data = Clipboard.GetDataObject();
-
-                    //    if (data.GetDataPresent(DataFormats.Bitmap))
-                    //    {
-                    //        Image image = (Image)data.GetData(DataFormats.Bitmap, true);
-                    //        fileName = outputDir + @"\group_" + rang[0] + "_" + rang[1] + ".jpg";
-                    //        image.Save(fileName,
-                    //            System.Drawing.Imaging.ImageFormat.Jpeg);
-                    //    }
-
-                    //}
-
-
-
-
-
-
                     groups.Add(valueinGroup);
-
-
                 }
+                callback(groups);
 
+                var t = new Thread(() => {
+                    try
+                    {
+                        foreach (int[] rang in rangs)
+                        {
+                            Excel.Range startCell = xlWorksheet.Cells[rang[0], 1];//not sure the second parameter needed?
+                            Excel.Range endCell = xlWorksheet.Cells[rang[1], columnCount];//not sure the second parameter needed?
+
+                            Excel.Workbook workbook = xlApp.Workbooks.Add();
+                            Excel.Worksheet worksheet = workbook.Sheets.Add();
+                            Excel.Range rng = xlWorksheet.Range[startCell, endCell];
+                            Excel.Range rngDest = (Excel.Range)worksheet.Cells[1, 1];
+                            rng.Copy(rngDest);
+                            string outPath = outputDir + @"\out" + rang[0] + "_" + rang[1] + "";
+                            workbook.SaveAs(outPath, Excel.XlFileFormat.xlWorkbookNormal, System.Reflection.Missing.Value, System.Reflection.Missing.Value, false, false, Excel.XlSaveAsAccessMode.xlShared, false, false, System.Reflection.Missing.Value, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
+                            workbook.Close();
+                            CloseWorkBook(workbook);
+                        }
+                    }
+                    catch (Exception ex) { }
+                    finally
+                    {
+                        closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
+                    }
+                });
+                t.IsBackground = true;
+                t.Start();
             }
             catch (Exception ex) { }
             finally
             {
-                closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
+               
             }
-
-            return groups;
         }
 
 
@@ -381,14 +356,8 @@ namespace SendMailThue
             }
 
             //close and release
-            if (xlWorkbook != null)
-            {
-
-                xlWorkbook.Close();
-                Marshal.ReleaseComObject(xlWorkbook);
-            }
-            
-
+            CloseWorkBook(xlWorkbook);
+          
             //quit and release
             if (xlApp != null)
             {
@@ -397,6 +366,20 @@ namespace SendMailThue
 
             Marshal.ReleaseComObject(xlApp);
         }
+
+
+        private static void CloseWorkBook(Excel.Workbook workbook) {
+            try
+            {
+                if (workbook != null)
+                {
+                    workbook.Close();
+                    Marshal.ReleaseComObject(workbook);
+                }
+            }
+            catch (Exception ex) { }
+        }
     }
+
 
 }

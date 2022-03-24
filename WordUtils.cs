@@ -18,14 +18,10 @@ namespace SendMailThue
             try
             {
                 application = new Word.Application();
-                
-
                 object missing = System.Reflection.Missing.Value;
-
                 int outIndex = 0;
                 foreach (List<string[]> replace in replaces)
                 {
-
                     document = application.Documents.Add(wordFile);
                     foreach (string[] rep in replace)
                     {
