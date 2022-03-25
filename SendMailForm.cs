@@ -13,7 +13,7 @@ namespace SendMailThue
 {
     public partial class SendMailForm : Form
     {
-        
+
         delegate void UpdateCompaniesDelegate();
         delegate void UpdateCompanyEmailsDelegate();
         delegate void UpdateCompaniesLoadingDelegate(bool isShow);
@@ -32,13 +32,15 @@ namespace SendMailThue
             companyEmailsLoading.Visible = false;
         }
 
-        private void LoadCompaniesFromFile() {
+        private void LoadCompaniesFromFile()
+        {
             showCompanyLoading(true);
-           CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile, (result) => {
-               companies = result;
-               showCompanyLoading(false);
-               MMapMailCompany();
-           });
+            CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile, (result) =>
+            {
+                companies = result;
+                showCompanyLoading(false);
+                MMapMailCompany();
+            });
         }
 
         private void LoadCompanyEmailFromFile()
@@ -51,7 +53,7 @@ namespace SendMailThue
 
         private void MMapMailCompany()
         {
-            if (companies.Count >= 0 && companyEmails.Count >= 0) 
+            if (companies.Count >= 0 && companyEmails.Count >= 0)
             {
                 foreach (Company company in companies)
                 {
@@ -91,14 +93,15 @@ namespace SendMailThue
 
         void UpdateForDonDocWordFileUI()
         {
-            bool exits =  File.Exists(donDocWordFile);
+            bool exits = File.Exists(donDocWordFile);
             if (exits)
             {
                 btnWordonDoc.BackColor = Color.DodgerBlue;
                 btnWordonDoc.ForeColor = Color.White;
                 btnWordonDoc.Text = Path.GetFullPath(donDocWordFile);
             }
-            else {
+            else
+            {
                 btnWordonDoc.BackColor = Color.Red;
                 btnWordonDoc.ForeColor = Color.White;
                 btnWordonDoc.Text = "Kéo thả file word \"Đôn đốc\" vào đây";
@@ -115,12 +118,12 @@ namespace SendMailThue
             }
             //this.dgvCompany.DataSource = new BindingSource(companies, ""); ;
             this.dgvCompany.DataSource = new BindingSource(companies, "");
-            
+
 
             this.dgvCompany.Columns["TenDonVi"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Format = Utility.MoneyFormat;
-            this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Font = new Font("Tahoma", 12) ;
+            this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Font = new Font("Tahoma", 12);
             this.dgvCompany.Columns["TongNo"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
 
             this.dgvCompany.Columns["DaDongDenThang"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -149,7 +152,7 @@ namespace SendMailThue
             this.dgvEmail.DataSource = new BindingSource(companyEmails, ""); ;
         }
 
-       
+
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -159,7 +162,8 @@ namespace SendMailThue
         private void dgvCompany_DragDrop(object sender, DragEventArgs e)
         {
             string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            if (fileList.Length != 1) {
+            if (fileList.Length != 1)
+            {
                 return;
             }
             companyFile = fileList[0];
@@ -187,7 +191,7 @@ namespace SendMailThue
             trd.Start();
         }
 
-      
+
         private void SendMailForm_Load(object sender, EventArgs e)
         {
             StartLoadCompanyEmailFromFile();
@@ -209,10 +213,12 @@ namespace SendMailThue
                 {
                     oRow.DefaultCellStyle.BackColor = Color.FromArgb(255, 179, 179);
                 }
-                else if (isAttachExcel) {
+                else if (isAttachExcel)
+                {
                     oRow.DefaultCellStyle.BackColor = Color.FromArgb(204, 255, 204);
                 }
-                else if (isAttachWord) {
+                else if (isAttachWord)
+                {
                     oRow.DefaultCellStyle.BackColor = Color.FromArgb(179, 217, 255);
                 }
             }
@@ -231,9 +237,9 @@ namespace SendMailThue
                 {
                     attachExcel = Eval.Execute<bool>("company." + txtSendExcelCodition.Text, new { company = company });
                 }
-                catch (NullReferenceException nrex) { } 
+                catch (NullReferenceException nrex) { }
                 catch (Exception ex) { }
-                company.AttachExcel = attachExcel; 
+                company.AttachExcel = attachExcel;
 
                 bool attachWord = false;
                 try
@@ -275,7 +281,7 @@ namespace SendMailThue
         {
             //string token = await GoogleAuth.Login(this);
             //return token;
-            EmailUtils.SendGMail("shenlongdemon@gmail.com" ,"subject", "body", new List<string>{ @"C:\Users\ASUS\Downloads\donDoc.doc"});
+            EmailUtils.SendGMail("shenlongdemon@gmail.com", "subject", "body", new List<string> { @"C:\Users\ASUS\Downloads\donDoc.doc" });
         }
 
         private void txtSendExcelCodition_KeyPress(object sender, KeyPressEventArgs e)
@@ -332,16 +338,6 @@ namespace SendMailThue
         {
         }
 
-        private void btnOpenGuild_Click(object sender, EventArgs e)
-        {
-            //GuidForm gf = new GuidForm();
-            //gf.Show();
-            GoogleLogin();
-        }
-
-
-        #endregion
-
         private void dgvCompany_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
         }
@@ -354,13 +350,9 @@ namespace SendMailThue
                 string MaDonVi = row.Cells["MaDonVi"].Value.ToString();
                 string TenDonVi = row.Cells["TenDonVi"].Value.ToString();
                 string range = row.Cells["Range"].Value.ToString();
-
-                // Feed the dummy name to the save dialog
                 exportFileDialog.FileName = MaDonVi + "-" + TenDonVi;
                 if (exportFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // Now here's our save folder
-                    // Do whatever
                     ExportFiles(range, exportFileDialog.FileName);
                 }
             }
@@ -369,9 +361,11 @@ namespace SendMailThue
         private void ExportFiles(string fromFileName, string savePath)
         {
             FileUtils.CopyFile(FileUtils.ExcelDir + @"\" + fromFileName + ".xls", savePath + ".xls");
-            FileUtils.CopyFile(FileUtils.WordDir + @"\" + fromFileName + ".doc", savePath+ ".doc");
-            
+            FileUtils.CopyFile(FileUtils.WordDir + @"\" + fromFileName + ".doc", savePath + ".doc");
+
         }
+        #endregion
+
 
     }
 }
