@@ -29,7 +29,7 @@ namespace SendMailThue
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SendMailForm));
             this.dgvEmail = new System.Windows.Forms.DataGridView();
             this.dgvCompany = new System.Windows.Forms.DataGridView();
@@ -74,14 +74,14 @@ namespace SendMailThue
             this.dgvCompany.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dgvCompany.BackgroundColor = System.Drawing.SystemColors.Window;
             this.dgvCompany.ColumnHeadersHeight = 29;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvCompany.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvCompany.DefaultCellStyle = dataGridViewCellStyle2;
             this.dgvCompany.Location = new System.Drawing.Point(291, 153);
             this.dgvCompany.Name = "dgvCompany";
             this.dgvCompany.RowHeadersWidth = 51;
@@ -152,9 +152,9 @@ namespace SendMailThue
             // 
             this.btnKillExcelProcess.BackColor = System.Drawing.Color.Red;
             this.btnKillExcelProcess.ForeColor = System.Drawing.Color.White;
-            this.btnKillExcelProcess.Location = new System.Drawing.Point(693, 0);
+            this.btnKillExcelProcess.Location = new System.Drawing.Point(641, -1);
             this.btnKillExcelProcess.Name = "btnKillExcelProcess";
-            this.btnKillExcelProcess.Size = new System.Drawing.Size(238, 43);
+            this.btnKillExcelProcess.Size = new System.Drawing.Size(118, 102);
             this.btnKillExcelProcess.TabIndex = 12;
             this.btnKillExcelProcess.Text = "Tắt tất cả Excell và Word";
             this.btnKillExcelProcess.UseVisualStyleBackColor = false;

@@ -19,7 +19,7 @@ namespace SendMailThue
 
         static string[] Scopes = { GmailService.Scope.GmailSend };
         static string ApplicationName = "SendMailThueApp";
-        public static async Task<bool> SendGMail(string toEmail, string subject, string body, List<string> attachmentFiles)
+        public static void SendGMail(string toEmail, string subject, string body, List<string> attachmentFiles)
         {
             byte[] credentialFile = Properties.Resources.credential;
             UserCredential credential;
@@ -57,7 +57,6 @@ namespace SendMailThue
             message.Raw = Encode(emailContent);
             var service = new GmailService(new BaseClientService.Initializer() { HttpClientInitializer = credential, ApplicationName = ApplicationName });
             service.Users.Messages.Send(message, "me").Execute();
-            return true;
         }
 
         public static string Encode(MimeMessage mimeMessage)

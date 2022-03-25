@@ -32,6 +32,19 @@ namespace SendMailThue
             companyEmailsLoading.Visible = false;
         }
 
+        private void SendMail()
+        {
+            List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
+            if (validCompanies.Count > 0)
+            {
+                foreach (Company company in validCompanies) 
+                {
+                    EmailUtils.SendGMail(company.Email, company.TenDonVi, "", null);
+                }
+                
+            }
+        }
+
         private void LoadCompaniesFromFile()
         {
             showCompanyLoading(true);
@@ -67,7 +80,6 @@ namespace SendMailThue
             UpdateCompaniesDataSource();
             UpdateCompanyEmailsDataSource();
         }
-
 
         void showCompanyLoading(bool isShow)
         {
@@ -139,8 +151,6 @@ namespace SendMailThue
                 buttonColSaveAs.UseColumnTextForButtonValue = true;
                 dgvCompany.Columns.Insert(columnIndex, buttonColSaveAs);
             }
-
-
         }
         void UpdateCompanyEmailsDataSource()
         {
@@ -336,6 +346,10 @@ namespace SendMailThue
 
         private void btnSendMail_Click(object sender, EventArgs e)
         {
+
+            Thread trd = new Thread(new ThreadStart(this.SendMail));
+            trd.IsBackground = true;
+            trd.Start();
         }
 
         private void dgvCompany_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
