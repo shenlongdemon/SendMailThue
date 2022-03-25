@@ -6,6 +6,7 @@ namespace SendMailThue
 {
     public class Company
     {
+        public String Range { get; set; }
         public String MaDonVi { get; set; }
         public String TenDonVi { get; set; }
         public Int64 TongNo { get; set; }
@@ -14,5 +15,6 @@ namespace SendMailThue
         public String Email { get; set; }
         public bool AttachWord { get; set; }
         public bool AttachExcel { get; set; }
+
     }
 }

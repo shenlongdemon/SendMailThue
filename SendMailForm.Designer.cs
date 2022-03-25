@@ -47,6 +47,7 @@ namespace SendMailThue
             this.companiesLoading = new AnimOfDots.Circular();
             this.companyEmailsLoading = new AnimOfDots.Circular();
             this.btnWordonDoc = new System.Windows.Forms.Button();
+            this.exportFileDialog = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.dgvEmail)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvCompany)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -87,7 +88,9 @@ namespace SendMailThue
             this.dgvCompany.RowTemplate.Height = 29;
             this.dgvCompany.Size = new System.Drawing.Size(1097, 635);
             this.dgvCompany.TabIndex = 3;
+            this.dgvCompany.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCompany_CellClick);
             this.dgvCompany.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvCompany_CellFormatting);
+            this.dgvCompany.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.dgvCompany_DataBindingComplete);
             this.dgvCompany.DragDrop += new System.Windows.Forms.DragEventHandler(this.dgvCompany_DragDrop);
             this.dgvCompany.DragEnter += new System.Windows.Forms.DragEventHandler(this.dgvCompany_DragEnter);
             // 
@@ -288,5 +291,6 @@ namespace SendMailThue
         private System.Windows.Forms.TextBox txtSendExcelCodition;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btnWordonDoc;
+        private System.Windows.Forms.SaveFileDialog exportFileDialog;
     }
 }

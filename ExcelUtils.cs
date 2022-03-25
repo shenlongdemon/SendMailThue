@@ -96,11 +96,13 @@ namespace SendMailThue
                         catch (Exception ex) { }
                         valueinGroup.Add(cellValue);
                     }
+                    valueinGroup.Add(rang[0] + "-" + rang[1]);
                     groups.Add(valueinGroup);
                 }
                 callback(groups);
 
-                var t = new Thread(() => {
+                var t = new Thread(() =>
+                {
                     try
                     {
                         foreach (int[] rang in rangs)
@@ -113,7 +115,7 @@ namespace SendMailThue
                             Excel.Range rng = xlWorksheet.Range[startCell, endCell];
                             Excel.Range rngDest = (Excel.Range)worksheet.Cells[1, 1];
                             rng.Copy(rngDest);
-                            string outPath = outputDir + @"\out" + rang[0] + "_" + rang[1] + "";
+                            string outPath = outputDir + @"\" + rang[0] + "-" + rang[1] + "";
                             workbook.SaveAs(outPath, Excel.XlFileFormat.xlWorkbookNormal, System.Reflection.Missing.Value, System.Reflection.Missing.Value, false, false, Excel.XlSaveAsAccessMode.xlShared, false, false, System.Reflection.Missing.Value, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
                             workbook.Close();
                             CloseWorkBook(workbook);
@@ -131,7 +133,7 @@ namespace SendMailThue
             catch (Exception ex) { }
             finally
             {
-               
+
             }
         }
 

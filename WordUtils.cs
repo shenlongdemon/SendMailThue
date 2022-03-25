@@ -9,9 +9,8 @@ namespace SendMailThue
 {
     public class WordUtils
     {
-        public static List<string> Replace(string wordFile, string outDir, List<List<string[]>> replaces)
+        public static void Replace(string wordFile, string outDir, List<List<string[]>> replaces)
         {
-            List<string> outs = new List<string>();
             FileUtils.CreateDir(outDir, true);
             Word.Application application = null;
             Word.Document document = null;
@@ -23,8 +22,13 @@ namespace SendMailThue
                 foreach (List<string[]> replace in replaces)
                 {
                     document = application.Documents.Add(wordFile);
+                    string fileName = "";
                     foreach (string[] rep in replace)
                     {
+                        if (rep[0] == "{fileName}")
+                        {
+                            fileName = rep[1];
+                        }
                         Microsoft.Office.Interop.Word.Find findObject = application.Selection.Find;
                         findObject.ClearFormatting();
                         findObject.Text = rep[0];
@@ -37,11 +41,10 @@ namespace SendMailThue
                             ref replaceAll, ref missing, ref missing, ref missing, ref missing);
 
                     }
-                    string fileName = outDir + @"\word_" + outIndex + ".doc";
-                    document.SaveAs(fileName);
+                    string outFile = outDir + @"\" + fileName + ".doc";
+                    document.SaveAs(outFile);
                     document.Close();
                     Marshal.ReleaseComObject(document);
-                    outs.Add(fileName + "");
                     outIndex++;
                 }
             }
@@ -51,7 +54,6 @@ namespace SendMailThue
             finally {
                 CloseWord(application, null);
             }
-            return outs;
         }
         private static void UndoAllChange(Word.Document document)
         {

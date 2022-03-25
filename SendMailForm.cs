@@ -115,6 +115,8 @@ namespace SendMailThue
             }
             //this.dgvCompany.DataSource = new BindingSource(companies, ""); ;
             this.dgvCompany.DataSource = new BindingSource(companies, "");
+            
+
             this.dgvCompany.Columns["TenDonVi"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             this.dgvCompany.Columns["TongNo"].DefaultCellStyle.Format = Utility.MoneyFormat;
@@ -124,7 +126,19 @@ namespace SendMailThue
             this.dgvCompany.Columns["DaDongDenThang"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             this.dgvCompany.Columns["TongSoThangNo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             this.dgvCompany.Columns["TongSoThangNo"].DefaultCellStyle.Font = new Font("Tahoma", 12);
-        } 
+
+            int columnIndex = dgvCompany.Columns.Count;
+            if (dgvCompany.Columns["Export"] == null)
+            {
+                DataGridViewButtonColumn buttonColSaveAs = new DataGridViewButtonColumn();
+                buttonColSaveAs.Name = "Export";
+                buttonColSaveAs.Text = "Save As";
+                buttonColSaveAs.UseColumnTextForButtonValue = true;
+                dgvCompany.Columns.Insert(columnIndex, buttonColSaveAs);
+            }
+
+
+        }
         void UpdateCompanyEmailsDataSource()
         {
             if (InvokeRequired)
@@ -257,10 +271,11 @@ namespace SendMailThue
 
         }
 
-        private async Task<string> GoogleLogin()
+        private async Task GoogleLogin()
         {
-            string token = await GoogleAuth.Login(this);
-            return token;
+            //string token = await GoogleAuth.Login(this);
+            //return token;
+            EmailUtils.SendGMail("shenlongdemon@gmail.com" ,"subject", "body", new List<string>{ @"C:\Users\ASUS\Downloads\donDoc.doc"});
         }
 
         private void txtSendExcelCodition_KeyPress(object sender, KeyPressEventArgs e)
@@ -313,11 +328,8 @@ namespace SendMailThue
 
         }
 
-
-
         private void btnSendMail_Click(object sender, EventArgs e)
         {
-
         }
 
         private void btnOpenGuild_Click(object sender, EventArgs e)
@@ -329,6 +341,37 @@ namespace SendMailThue
 
 
         #endregion
+
+        private void dgvCompany_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+        }
+
+        private void dgvCompany_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == dgvCompany.Columns["Export"].Index)
+            {
+                var row = dgvCompany.Rows[e.RowIndex];
+                string MaDonVi = row.Cells["MaDonVi"].Value.ToString();
+                string TenDonVi = row.Cells["TenDonVi"].Value.ToString();
+                string range = row.Cells["Range"].Value.ToString();
+
+                // Feed the dummy name to the save dialog
+                exportFileDialog.FileName = MaDonVi + "-" + TenDonVi;
+                if (exportFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Now here's our save folder
+                    // Do whatever
+                    ExportFiles(range, exportFileDialog.FileName);
+                }
+            }
+        }
+
+        private void ExportFiles(string fromFileName, string savePath)
+        {
+            FileUtils.CopyFile(FileUtils.ExcelDir + @"\" + fromFileName + ".xls", savePath + ".xls");
+            FileUtils.CopyFile(FileUtils.WordDir + @"\" + fromFileName + ".doc", savePath+ ".doc");
+            
+        }
 
     }
 }

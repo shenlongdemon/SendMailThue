@@ -19,8 +19,8 @@ namespace SendMailThue
                     "-20_7", // chuyen ky sau tong no
                     "-14_1", // Kết quả đơn vị đã đóng BHXH bắt buộc cho 5 lao động đến hết tháng 12/2021						
                 };
-            string excelSplitDir = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName) + @"\excels";
-            string wordSplitDir = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName) + @"\words";
+            string excelSplitDir = FileUtils.ExcelDir;
+            string wordSplitDir = FileUtils.WordDir;
 
             ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir, (result) => {
                 List<Company> companies = new List<Company>();
@@ -49,7 +49,7 @@ namespace SendMailThue
             foreach (Company company in companies)
             {
                 List<string[]> replace = new List<string[]>();
-
+                replace.Add(new string[] { "{fileName}", company.Range + "" });
                 replace.Add(new string[] { "{day}", now.Day + "" });
                 replace.Add(new string[] { "{month}", (now.Month + 1) + "" });
                 replace.Add(new string[] { "{year}", now.Year + "" });
@@ -61,11 +61,7 @@ namespace SendMailThue
                 replace.Add(new string[] { "{lastdateofmonth}", lastDateOfMonth.ToString("dd/MM/yyyy") + "" });
                 replaces.Add(replace);
             }
-            List<string> outs = WordUtils.Replace(donDocWordFile, wordSplitDir, replaces);
-            //for (int i = 0; i < outs.Count; i++)
-            //{
-            //    //companies[i].Word = outs[i];
-            //}
+            WordUtils.Replace(donDocWordFile, wordSplitDir, replaces);
         }
 
         public static List<Company> GetCompaniesFromFiles(List<string> files)
@@ -121,6 +117,7 @@ namespace SendMailThue
                 TongSoThangNo = tongThangNo,
                 AttachExcel = false,
                 AttachWord = false,
+                Range = values[4],
             };
             return company;
 

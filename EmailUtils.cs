@@ -1,6 +1,4 @@
-﻿using EASendMail;
-using MailKit.Security;
-using MimeKit;
+﻿using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Net.Mail;
@@ -10,7 +8,6 @@ using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Services;
-using Google.Apis.Util.Store;
 using System.IO;
 using System.Threading;
 using Google.Apis.Gmail.v1.Data;
@@ -22,9 +19,8 @@ namespace SendMailThue
 
         static string[] Scopes = { GmailService.Scope.GmailSend };
         static string ApplicationName = "SendMailThueApp";
-        public static async Task<bool> SendGMail(string toEmail, string subject, string body)
+        public static async Task<bool> SendGMail(string toEmail, string subject, string body, List<string> attachmentFiles)
         {
-
             byte[] credentialFile = Properties.Resources.credential;
             UserCredential credential;
             //read your credentials file
@@ -32,17 +28,48 @@ namespace SendMailThue
             {
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, Scopes, "user", CancellationToken.None).Result;
             }
-            
 
-            string message = $"To: {toEmail}\r\nSubject: {subject}\r\nContent-Type: text/html;charset=utf-8\r\n\r\n<h1>{body}</h1>";
-            var data = Encoding.UTF8.GetBytes(message);
-            var base64Msg = Convert.ToBase64String(data).Replace("+", "-").Replace("/", "_").Replace("=", ""); ;
-            //call your gmail service
+            var emailContent = new MimeMessage();
+            emailContent.To.Add(new MailboxAddress("", toEmail));
+            emailContent.Subject = subject;
+
+            var builder = new BodyBuilder();
+            // In order to reference selfie.jpg from the html text, we'll need to add it
+            // to builder.LinkedResources and then use its Content-Id value in the img src.
+            //var image = builder.LinkedResources.Add(@"C:\Users\ASUS\Downloads\logout.png");
+            //image.ContentId = MimeUtils.GenerateMessageId();
+            // Set the html version of the message text
+            //builder.HtmlBody = string.Format(@"<p>Hey Alice,<br>
+            //<center><img src=""cid:{0}""></center>", image.ContentId);
+            builder.HtmlBody = body;
+            if (attachmentFiles != null)
+            {
+                foreach (string file in attachmentFiles)
+                {
+                    builder.Attachments.Add(file);
+                }
+            }
+            // We may also want to attach a calendar event for Monica's party...
+
+            // Now we just need to set the message body and we're done
+            emailContent.Body = builder.ToMessageBody();
+            Message message = new Message();
+            message.Raw = Encode(emailContent);
             var service = new GmailService(new BaseClientService.Initializer() { HttpClientInitializer = credential, ApplicationName = ApplicationName });
-            var msg = new Google.Apis.Gmail.v1.Data.Message();
-            msg.Raw = base64Msg;
-            service.Users.Messages.Send(msg, "me").Execute();
+            service.Users.Messages.Send(message, "me").Execute();
             return true;
+        }
+
+        public static string Encode(MimeMessage mimeMessage)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                mimeMessage.WriteTo(ms);
+                return Convert.ToBase64String(ms.GetBuffer())
+                    .TrimEnd('=')
+                    .Replace('+', '-')
+                    .Replace('/', '_');
+            }
         }
 
         static string Base64UrlEncode(string input)
@@ -79,43 +106,6 @@ namespace SendMailThue
                 account, password);
             smtpClient.Send(message);
         } 
-
-       public static async Task SendMailAsync1(string userId, string token, string fromEmail, string toEmail, string subject, string body, List<string> attachments)
-        {
-            try
-            {
-                // Gmail API server address
-                using (var client = new MailKit.Net.Smtp.SmtpClient())
-                {
-                    client.Connect("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-
-                    var oauth2 = new SaslMechanismOAuth2("tranphuochungid@gmail.com", token);
-                    client.Authenticate(oauth2);
-
-                    var message = new MimeMessage();
-                    message.From.Add(new MailboxAddress("Joey Tribbiani", fromEmail));
-                    message.To.Add(new MailboxAddress("Mrs. Chanandler Bong", toEmail));
-                    message.Subject = "How you doin'?";
-
-                    message.Body = new TextPart("plain")
-                    {
-                        Text = @"Hey Chandler"
-                    };
-                    await client.SendAsync(message);
-                    client.Disconnect(true);
-                }
-            }
-            catch (Exception ep)
-            {
-                Console.WriteLine("Exception: {0}", ep.Message);
-            }
-        }
-
-        internal static void SendMail(string token)
-        {
-            
-        }
-
     }
 }
 
