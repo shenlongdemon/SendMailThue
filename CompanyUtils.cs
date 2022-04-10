@@ -1,5 +1,6 @@
 ﻿using Itenso.TimePeriod;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -41,6 +42,16 @@ namespace SendMailThue
             });
         }
 
+        public static string GetCompanyExcelFile(Company company)
+        {
+            return FileUtils.ExcelDir + @"\" + company.Range + ".xls";
+        }
+
+        public static string GetCompanyWordFile(Company company)
+        {
+            return FileUtils.WordDir + @"\" + company.Range + ".doc";
+        }
+
         private static void HandleDonDocWordFile(string donDocWordFile, List<Company> companies, string wordSplitDir)
         {
             List<List<string[]>> replaces = new List<List<string[]>>();
@@ -51,7 +62,7 @@ namespace SendMailThue
                 List<string[]> replace = new List<string[]>();
                 replace.Add(new string[] { "{fileName}", company.Range + "" });
                 replace.Add(new string[] { "{day}", now.Day + "" });
-                replace.Add(new string[] { "{month}", (now.Month + 1) + "" });
+                replace.Add(new string[] { "{month}", (now.Month) + "" });
                 replace.Add(new string[] { "{year}", now.Year + "" });
                 replace.Add(new string[] { "{tendonvi}", company.TenDonVi + "" });
                 replace.Add(new string[] { "{now}", now.ToString("dd/MM/yyyy") });
@@ -153,6 +164,12 @@ namespace SendMailThue
             }
 
             return companyEmails;
+        }
+
+        public static void SaveCompanyEmailsToExcelFile(string companyEmailFile, List<CompanyEmail> companyEmails)
+        {
+            List<string[]> values = companyEmails.Select(p => new string[] { p.MaDonVi, p.Email}).ToList();
+            ExcelUtils.SaveValuesToFile(companyEmailFile, values, true);
         }
     }
 }

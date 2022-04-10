@@ -121,7 +121,7 @@
   <data name="credential" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\credential.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="s" xml:space="preserve">
-    <value />
+  <data name="donDoc" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\donDoc.doc;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

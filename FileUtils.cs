@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SendMailThue
 {
     public class FileUtils
     {
-
+        public static bool IsFileExist(string file) {
+            return File.Exists(file);
+        }
         
         public static String ExecuteAppDir
         {
@@ -37,9 +40,10 @@ namespace SendMailThue
             System.IO.Directory.CreateDirectory(outputDir);
         }
 
-        public static void CopyFile(string fromPathFile, string toPathFile)
+        public static string CopyFile(string fromPathFile, string toPathFile)
         {
             System.IO.File.Copy(fromPathFile, toPathFile, true);
+            return toPathFile;
       }
         
     }

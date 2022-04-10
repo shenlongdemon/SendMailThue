@@ -18,36 +18,91 @@ namespace SendMailThue
         delegate void UpdateCompanyEmailsDelegate();
         delegate void UpdateCompaniesLoadingDelegate(bool isShow);
         delegate void UpdateCompanyEmailsLoadingDelegate(bool isShow);
+        delegate void UpdateSendEmailsLoadingDelegate(bool isShow);
 
         private List<Company> companies = new List<Company>();
         private List<CompanyEmail> companyEmails = new List<CompanyEmail>();
 
         private string companyFile = "";
         private string companyEmailFile = Storage.CompanyEmailFile;
-        private string donDocWordFile = Storage.DonDocWordFile;
+        private string donDocWordFile = FileUtils.ExecuteAppDir + @"\donDoc.doc";
         public SendMailForm()
         {
             InitializeComponent();
             companiesLoading.Visible = false;
             companyEmailsLoading.Visible = false;
+            sendMailLoading.Visible = false;
         }
 
         private void SendMail()
         {
-            List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
-            if (validCompanies.Count > 0)
+            if (!chkExcelEmail.Checked || !chkWordEmail.Checked)
             {
-                foreach (Company company in validCompanies) 
-                {
-                    EmailUtils.SendGMail(company.Email, company.TenDonVi, "", null);
-                }
-                
+                return;
             }
+            List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
+            if (validCompanies.Count == 0)
+            {
+                return;
+            }
+            showSendMailLoading(true);
+
+            foreach (Company company in validCompanies)
+            {
+                string excelFile = "";
+                if (company.AttachExcel)
+                {
+                    excelFile = CompanyUtils.GetCompanyExcelFile(company);
+                    excelFile = FileUtils.CopyFile(excelFile, FileUtils.ExcelDir + @"\Thông báo kết quả.xls");
+                }
+                string wordFile = "";
+                if (company.AttachWord)
+                {
+                    wordFile = CompanyUtils.GetCompanyWordFile(company);
+                    wordFile = FileUtils.CopyFile(wordFile, FileUtils.WordDir + @"\Công văn đôn đốc.doc");
+                }
+                EmailUtils.SendGMail(company.Email, company.TenDonVi, "", new List<string> { excelFile, wordFile });
+            }
+            showSendMailLoading(false);
+
+        }
+        private void Print()
+        {
+            if (!chkExcelPrint.Checked || !chkWordPrint.Checked)
+            {
+                return;
+            }
+            List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
+            if (validCompanies.Count == 0)
+            {
+                return;
+            }
+
+            using (PrintDialog printDialog1 = new PrintDialog())
+            {
+                //printDialog1.PrinterSettings.PrinterName = printer;
+                if (printDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (Company company in validCompanies)
+                    {
+                        System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo(CompanyUtils.GetCompanyWordFile(company));
+                        //info.Arguments = „\““ + printDialog1.PrinterSettings.PrinterName + „\““;
+                        //info.Arguments = „\““ +printer + „\““;
+                        info.CreateNoWindow = true;
+                        info.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                        info.UseShellExecute = true;
+                        info.Verb = "PrintTo";
+                        System.Diagnostics.Process.Start(info);
+                    }
+                }
+            }
+
         }
 
         private void LoadCompaniesFromFile()
         {
             showCompanyLoading(true);
+
             CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile, (result) =>
             {
                 companies = result;
@@ -81,6 +136,18 @@ namespace SendMailThue
             UpdateCompanyEmailsDataSource();
         }
 
+        void showSendMailLoading(bool isShow)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new UpdateSendEmailsLoadingDelegate(showSendMailLoading), isShow);
+                return;
+            }
+            this.sendMailLoading.IsEnabled = isShow;
+            this.sendMailLoading.Visible = isShow;
+            btnSendMail.Visible = !isShow;
+        }
+
         void showCompanyLoading(bool isShow)
         {
             if (InvokeRequired)
@@ -103,24 +170,6 @@ namespace SendMailThue
             this.companyEmailsLoading.Visible = isShow;
         }
 
-        void UpdateForDonDocWordFileUI()
-        {
-            bool exits = File.Exists(donDocWordFile);
-            if (exits)
-            {
-                btnWordonDoc.BackColor = Color.DodgerBlue;
-                btnWordonDoc.ForeColor = Color.White;
-                btnWordonDoc.Text = Path.GetFullPath(donDocWordFile);
-            }
-            else
-            {
-                btnWordonDoc.BackColor = Color.Red;
-                btnWordonDoc.ForeColor = Color.White;
-                btnWordonDoc.Text = "Kéo thả file word \"Đôn đốc\" vào đây";
-            }
-        }
-
-
         void UpdateCompaniesDataSource()
         {
             if (InvokeRequired)
@@ -142,15 +191,19 @@ namespace SendMailThue
             this.dgvCompany.Columns["TongSoThangNo"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
             this.dgvCompany.Columns["TongSoThangNo"].DefaultCellStyle.Font = new Font("Tahoma", 12);
 
-            int columnIndex = dgvCompany.Columns.Count;
-            if (dgvCompany.Columns["Export"] == null)
-            {
-                DataGridViewButtonColumn buttonColSaveAs = new DataGridViewButtonColumn();
-                buttonColSaveAs.Name = "Export";
-                buttonColSaveAs.Text = "Save As";
-                buttonColSaveAs.UseColumnTextForButtonValue = true;
-                dgvCompany.Columns.Insert(columnIndex, buttonColSaveAs);
-            }
+            this.dgvCompany.Columns["AttachExcel"].ReadOnly = true;
+            this.dgvCompany.Columns["AttachWord"].ReadOnly = true;
+
+
+            //int columnIndex = dgvCompany.Columns.Count;
+            //if (dgvCompany.Columns["Export"] == null)
+            //{
+            //    DataGridViewButtonColumn buttonColSaveAs = new DataGridViewButtonColumn();
+            //    buttonColSaveAs.Name = "Export";
+            //    buttonColSaveAs.Text = "Save As";
+            //    buttonColSaveAs.UseColumnTextForButtonValue = true;
+            //    dgvCompany.Columns.Insert(columnIndex, buttonColSaveAs);
+            //}
         }
         void UpdateCompanyEmailsDataSource()
         {
@@ -159,7 +212,10 @@ namespace SendMailThue
                 this.Invoke(new UpdateCompanyEmailsDelegate(UpdateCompanyEmailsDataSource));
                 return;
             }
-            this.dgvEmail.DataSource = new BindingSource(companyEmails, ""); ;
+            BindingSource binding = new BindingSource();
+            binding.DataSource = companyEmails;
+            dgvEmail.DataSource = null;
+            dgvEmail.DataSource = binding;
         }
 
 
@@ -205,7 +261,15 @@ namespace SendMailThue
         private void SendMailForm_Load(object sender, EventArgs e)
         {
             StartLoadCompanyEmailFromFile();
-            UpdateForDonDocWordFileUI();
+            LoadDonDocWordFile();
+        }
+
+        private void LoadDonDocWordFile()
+        {
+            if (!FileUtils.IsFileExist(donDocWordFile))
+            {
+                File.WriteAllBytes(donDocWordFile, Storage.DonDocWordFile);
+            }
         }
 
         private void dgvCompany_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -236,29 +300,32 @@ namespace SendMailThue
 
         private void ApplyCondition()
         {
+            int numberForExcel = 0;
+            int numberForWord = 0;
+
+            try
+            {
+                numberForExcel = int.Parse(txtSendExcelCodition.Text.Trim());
+            }
+            catch (Exception ex) { }
+            try
+            {
+                numberForWord = int.Parse(txtSendWordCodition.Text.Trim());
+            }
+            catch (Exception ex) { }
+
             foreach (Company company in companies)
             {
-                if (company.Email.Trim() == "")
+                if (company.Email.Trim() == "" && numberForExcel == 0 && numberForWord == 0)
                 {
+                    company.AttachExcel = false;
+                    company.AttachWord = false;
                     continue;
                 }
-                bool attachExcel = false;
-                try
-                {
-                    attachExcel = Eval.Execute<bool>("company." + txtSendExcelCodition.Text, new { company = company });
-                }
-                catch (NullReferenceException nrex) { }
-                catch (Exception ex) { }
-                company.AttachExcel = attachExcel;
 
-                bool attachWord = false;
-                try
-                {
-                    attachWord = Eval.Execute<bool>("company." + txtSendWordCodition.Text, new { company = company });
-                }
-                catch (NullReferenceException nrex) { }
-                catch (Exception ex) { }
-                company.AttachWord = attachWord;
+                company.AttachExcel = numberForExcel > 0 && company.TongSoThangNo >= numberForExcel;
+
+                company.AttachWord = numberForWord > 0 && company.TongSoThangNo >= numberForWord;
             }
             UpdateCompaniesDataSource();
         }
@@ -268,18 +335,6 @@ namespace SendMailThue
         private void btnWordonDoc_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.All;
-        }
-
-        private void btnWordonDoc_DragDrop(object sender, DragEventArgs e)
-        {
-            string[] fileList = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            if (fileList.Length != 1)
-            {
-                return;
-            }
-            donDocWordFile = fileList[0];
-            Storage.DonDocWordFile = donDocWordFile;
-            UpdateForDonDocWordFileUI();
         }
 
         private void companiesLoading_Load(object sender, EventArgs e)
@@ -346,10 +401,13 @@ namespace SendMailThue
 
         private void btnSendMail_Click(object sender, EventArgs e)
         {
+            //Thread sendMailTask = new Thread(new ThreadStart(this.SendMail));
+            //sendMailTask.IsBackground = true;
+            //sendMailTask.Start();  
 
-            Thread trd = new Thread(new ThreadStart(this.SendMail));
-            trd.IsBackground = true;
-            trd.Start();
+            Thread printTask = new Thread(new ThreadStart(this.Print));
+            printTask.IsBackground = true;
+            printTask.Start();
         }
 
         private void dgvCompany_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -358,18 +416,18 @@ namespace SendMailThue
 
         private void dgvCompany_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == dgvCompany.Columns["Export"].Index)
-            {
-                var row = dgvCompany.Rows[e.RowIndex];
-                string MaDonVi = row.Cells["MaDonVi"].Value.ToString();
-                string TenDonVi = row.Cells["TenDonVi"].Value.ToString();
-                string range = row.Cells["Range"].Value.ToString();
-                exportFileDialog.FileName = MaDonVi + "-" + TenDonVi;
-                if (exportFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    ExportFiles(range, exportFileDialog.FileName);
-                }
-            }
+            //if (e.ColumnIndex == dgvCompany.Columns["Export"].Index)
+            //{
+            //    var row = dgvCompany.Rows[e.RowIndex];
+            //    string MaDonVi = row.Cells["MaDonVi"].Value.ToString();
+            //    string TenDonVi = row.Cells["TenDonVi"].Value.ToString();
+            //    string range = row.Cells["Range"].Value.ToString();
+            //    exportFileDialog.FileName = MaDonVi + "-" + TenDonVi;
+            //    if (exportFileDialog.ShowDialog() == DialogResult.OK)
+            //    {
+            //        ExportFiles(range, exportFileDialog.FileName);
+            //    }
+            //}
         }
 
         private void ExportFiles(string fromFileName, string savePath)
@@ -378,8 +436,48 @@ namespace SendMailThue
             FileUtils.CopyFile(FileUtils.WordDir + @"\" + fromFileName + ".doc", savePath + ".doc");
 
         }
+
         #endregion
 
+        private void label3_Click(object sender, EventArgs e)
+        {
 
+        }
+
+        private void dgvEmail_CellEnter(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void StartUpdateCompanyEmail()
+        {
+            Thread trd = new Thread(new ThreadStart(this.UpdateCompanyEmails));
+            trd.IsBackground = true;
+            trd.Start();
+        }
+
+        private void UpdateCompanyEmails()
+        {
+            companyEmails = (dgvEmail.DataSource as BindingSource).DataSource as List<CompanyEmail>;
+            MMapMailCompany();
+            CompanyUtils.SaveCompanyEmailsToExcelFile(companyEmailFile, companyEmails);
+        }
+
+        private void dgvEmail_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                StartUpdateCompanyEmail();
+            }
+        }
+
+        private void dgvEmail_UserDeletedRow(object sender, DataGridViewRowEventArgs e)
+        {
+            try
+            {
+                StartUpdateCompanyEmail();
+            }
+            catch (Exception ex) { }
+        }
     }
 }

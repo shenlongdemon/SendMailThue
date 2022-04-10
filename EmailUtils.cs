@@ -46,7 +46,10 @@ namespace SendMailThue
             {
                 foreach (string file in attachmentFiles)
                 {
-                    builder.Attachments.Add(file);
+                    if (!String.IsNullOrEmpty(file))
+                    {
+                        builder.Attachments.Add(file);
+                    }
                 }
             }
             // We may also want to attach a calendar event for Monica's party...

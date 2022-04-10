@@ -17,16 +17,14 @@ namespace SendMailThue
                 Settings.Default.Save();
             }
         }
-        public static String DonDocWordFile
+
+        public static byte[] DonDocWordFile
         {
             get {
-                return Settings.Default.DonDocWordFile;
-            }
-
-            set {
-                Settings.Default.DonDocWordFile = value;
-                Settings.Default.Save();
+                return Properties.Resources.donDoc;
             }
         }
+
+
     }
 }

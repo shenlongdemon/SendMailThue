@@ -186,6 +186,58 @@ namespace SendMailThue
             return ranges;
         }
 
+        public static void SaveValuesToFile(string file, List<string[]> values, bool skipHeader)
+        {
+
+            Excel.Application xlApp = null;
+            Excel.Workbook xlWorkbook = null;
+            Excel.Worksheet xlWorksheet = null;
+            Excel.Range xlRange = null;
+            try
+            {
+                xlApp = new Excel.Application();
+                xlWorkbook = xlApp.Workbooks.Open(file);
+                xlWorksheet = xlWorkbook.Sheets[1];
+                xlRange = xlWorksheet.UsedRange;
+                ClearRange(xlWorksheet, xlRange, skipHeader);
+
+                for (int i = 0; i < values.Count; i++) 
+                {
+                    string[] vs = values[i];
+                    for(int j = 0; j < vs.Length; j++)
+                    {
+                        Excel.Range cell = xlWorksheet.Cells[i + (skipHeader ? 2 : 1), j + 1];
+                        cell.Value = vs[j];
+                    }
+                }
+                xlWorkbook.Save();
+
+            }
+            catch (Exception ex) { }
+            finally
+            {
+                closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
+            }
+
+        }
+
+        private static void ClearRange(Excel.Worksheet xlWorksheet, Excel.Range xlRange, bool skipHeader)
+        {
+            int rowCount = xlRange.Rows.Count;
+            int columnCount = xlRange.Columns.Count;
+            int a = skipHeader ? 2 : 1;
+
+            for (int i = a; i <= rowCount; i++)
+            {
+                
+                for (int j = 1; j <= columnCount; j++)
+                {
+                    Excel.Range cell = xlWorksheet.Cells[i , j];
+                    cell.Value = "";
+                }
+            }
+        }
+
         public static List<List<string>> GetGroupValuesByGroupRow(string file, List<string> fields, int rowInGroup)
         {
             List<List<string>> groups = new List<List<string>>();
@@ -363,7 +415,11 @@ namespace SendMailThue
             //quit and release
             if (xlApp != null)
             {
-                xlApp.Quit();
+                try
+                {
+                    xlApp.Quit();
+                }
+                catch (Exception ex) { }
             }
 
             Marshal.ReleaseComObject(xlApp);

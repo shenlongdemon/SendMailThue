@@ -34,17 +34,5 @@ namespace SendMailThue {
                 this["CompanyEmailFile"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string DonDocWordFile {
-            get {
-                return ((string)(this["DonDocWordFile"]));
-            }
-            set {
-                this["DonDocWordFile"] = value;
-            }
-        }
     }
 }
