@@ -35,7 +35,14 @@ namespace SendMailThue
                 }
                 callback(companies);
                 var t = new Thread(() => {
-                    HandleDonDocWordFile(donDocWordFile, companies, wordSplitDir);
+                    try
+                    {
+                        HandleDonDocWordFile(donDocWordFile, companies, wordSplitDir);
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorUtils.ShowError(ex, true);
+                    }
                 });
                 t.IsBackground = true;
                 t.Start();

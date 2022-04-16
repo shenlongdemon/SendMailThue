@@ -8,6 +8,7 @@ using Z.Expressions;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.IO;
+using SendMailThue.Extentions;
 
 namespace SendMailThue
 {
@@ -32,6 +33,7 @@ namespace SendMailThue
             companiesLoading.Visible = false;
             companyEmailsLoading.Visible = false;
             sendMailLoading.Visible = false;
+            dgvCompany.DoubleBuffered(true);
         }
 
         private void SendMail()
@@ -68,55 +70,82 @@ namespace SendMailThue
         }
         private void Print()
         {
-            if (!chkExcelPrint.Checked || !chkWordPrint.Checked)
+            try
             {
-                return;
-            }
-            List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
-            if (validCompanies.Count == 0)
-            {
-                return;
-            }
-
-            using (PrintDialog printDialog1 = new PrintDialog())
-            {
-                //printDialog1.PrinterSettings.PrinterName = printer;
-                if (printDialog1.ShowDialog() == DialogResult.OK)
+                if (!chkExcelPrint.Checked || !chkWordPrint.Checked)
                 {
-                    foreach (Company company in validCompanies)
+                    return;
+                }
+                List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
+                if (validCompanies.Count == 0)
+                {
+                    return;
+                }
+
+                using (PrintDialog printDialog1 = new PrintDialog())
+                {
+                    //printDialog1.PrinterSettings.PrinterName = printer;
+                    if (printDialog1.ShowDialog() == DialogResult.OK)
                     {
-                        System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo(CompanyUtils.GetCompanyWordFile(company));
-                        //info.Arguments = „\““ + printDialog1.PrinterSettings.PrinterName + „\““;
-                        //info.Arguments = „\““ +printer + „\““;
-                        info.CreateNoWindow = true;
-                        info.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                        info.UseShellExecute = true;
-                        info.Verb = "PrintTo";
-                        System.Diagnostics.Process.Start(info);
+                        foreach (Company company in validCompanies)
+                        {
+                            System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo(CompanyUtils.GetCompanyWordFile(company));
+                            //info.Arguments = „\““ + printDialog1.PrinterSettings.PrinterName + „\““;
+                            //info.Arguments = „\““ +printer + „\““;
+                            info.CreateNoWindow = true;
+                            info.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                            info.UseShellExecute = true;
+                            info.Verb = "PrintTo";
+                            System.Diagnostics.Process.Start(info);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                ErrorUtils.ShowError(ex, true);
             }
 
         }
 
         private void LoadCompaniesFromFile()
         {
-            showCompanyLoading(true);
-
-            CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile, (result) =>
+            try
             {
-                companies = result;
-                showCompanyLoading(false);
-                MMapMailCompany();
-            });
+                showCompanyLoading(true);
+
+                CompanyUtils.GetCompaniesFromExcelFile(companyFile, donDocWordFile, (result) =>
+                {
+                    try
+                    {
+                        companies = result;
+                        showCompanyLoading(false);
+                        MMapMailCompany();
+                    }
+                    catch (Exception ex)
+                    {
+                        ErrorUtils.ShowError(ex, true);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                ErrorUtils.ShowError(ex, true);
+            }
         }
 
         private void LoadCompanyEmailFromFile()
         {
-            showCompanyEmailsLoading(true);
-            companyEmails = CompanyUtils.GetCompanyEmailsFromFile(companyEmailFile);
-            showCompanyEmailsLoading(false);
-            MMapMailCompany();
+            try
+            {
+                showCompanyEmailsLoading(true);
+                companyEmails = CompanyUtils.GetCompanyEmailsFromFile(companyEmailFile);
+                showCompanyEmailsLoading(false);
+                MMapMailCompany();
+            }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, true);
+            }
         }
 
         private void MMapMailCompany()
@@ -132,8 +161,15 @@ namespace SendMailThue
                     }
                 }
             }
-            UpdateCompaniesDataSource();
-            UpdateCompanyEmailsDataSource();
+            try
+            {
+                UpdateCompaniesDataSource();
+                UpdateCompanyEmailsDataSource();
+            }
+            catch (Exception ex)
+            {
+                ErrorUtils.ShowError(ex, true);
+            }
         }
 
         void showSendMailLoading(bool isShow)
@@ -458,9 +494,16 @@ namespace SendMailThue
 
         private void UpdateCompanyEmails()
         {
-            companyEmails = (dgvEmail.DataSource as BindingSource).DataSource as List<CompanyEmail>;
-            MMapMailCompany();
-            CompanyUtils.SaveCompanyEmailsToExcelFile(companyEmailFile, companyEmails);
+            try
+            {
+                companyEmails = (dgvEmail.DataSource as BindingSource).DataSource as List<CompanyEmail>;
+                MMapMailCompany();
+                CompanyUtils.SaveCompanyEmailsToExcelFile(companyEmailFile, companyEmails);
+            }
+            catch (Exception ex)
+            {
+                ErrorUtils.ShowError(ex, true);
+            }
         }
 
         private void dgvEmail_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
