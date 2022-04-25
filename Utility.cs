@@ -13,124 +13,121 @@ namespace SendMailThue
             return String.Format("{0:#,##0}", money);
         }
 
-         public static string ConvertMoneyToString(long _number)
+        public static string ConvertMoneyToString(long number)
         {
-            if (_number <= 0)
-                return "Không đồng.";
-
-            string _source = String.Format("{0:0,0}", _number);
-
-            string[] _arrsource = _source.Split(',');
-
-            string _letter = "";
-
-            int _numunit = _arrsource.Length;
-            foreach (string _str in _arrsource)
-            {
-                if (ThreeNumber2Letter(_str).Length != 0)
-                    _letter += String.Format("{0} {1} ", ThreeNumber2Letter(_str), NumUnit(_numunit));
-                _numunit--;
-            }
-
-            if (_letter.StartsWith("không trăm"))
-                _letter = _letter.Substring(11, _letter.Length - 12);
-            if (_letter.StartsWith("lẻ"))
-                _letter = _letter.Substring(3, _letter.Length - 3);
-
-            return String.Format("{0}{1} đồng.", _letter.Substring(0, 1).ToUpper(), _letter.Substring(1, _letter.Length - 1).Trim());
-
+            var chu = ChuyenSoSangChuoi(number);
+            return chu;
         }
-        private static string ThreeNumber2Letter(string _number)
+        static string[] mNumText = "không;một;hai;ba;bốn;năm;sáu;bảy;tám;chín".Split(';');
+        //Viết hàm chuyển số hàng chục, giá trị truyền vào là số cần chuyển và một biến đọc phần lẻ hay không ví dụ 101 => một trăm lẻ một
+        private static string DocHangChuc(double so, bool daydu)
         {
-            int _hunit = 0, _tunit = 0, _nunit = 0;
-            if (_number.Length == 3)
+            string chuoi = "";
+            //Hàm để lấy số hàng chục ví dụ 21/10 = 2
+            Int64 chuc = Convert.ToInt64(Math.Floor((double)(so / 10)));
+            //Lấy số hàng đơn vị bằng phép chia 21 % 10 = 1
+            Int64 donvi = (Int64)so % 10;
+            //Nếu số hàng chục tồn tại tức >=20
+            if (chuc > 1)
             {
-                _hunit = int.Parse(_number.Substring(0, 1));
-                _tunit = int.Parse(_number.Substring(1, 1));
-                _nunit = int.Parse(_number.Substring(2, 1));
+                chuoi = " " + mNumText[chuc] + " mươi";
+                if (donvi == 1)
+                {
+                    chuoi += " mốt";
+                }
             }
-            else if (_number.Length == 2)
+            else if (chuc == 1)
+            {//Số hàng chục từ 10-19
+                chuoi = " mười";
+                if (donvi == 1)
+                {
+                    chuoi += " một";
+                }
+            }
+            else if (daydu && donvi > 0)
+            {//Nếu hàng đơn vị khác 0 và có các số hàng trăm ví dụ 101 => thì biến daydu = true => và sẽ đọc một trăm lẻ một
+                chuoi = " lẻ";
+            }
+            if (donvi == 5 && chuc >= 1)
+            {//Nếu đơn vị là số 5 và có hàng chục thì chuỗi sẽ là " lăm" chứ không phải là " năm"
+                chuoi += " lăm";
+            }
+            else if (donvi > 1 || (donvi == 1 && chuc == 0))
             {
-                _tunit = int.Parse(_number.Substring(0, 1));
-                _nunit = int.Parse(_number.Substring(1, 1));
+                chuoi += " " + mNumText[donvi];
             }
-            else if (_number.Length == 1)
-                _nunit = int.Parse(_number.Substring(0, 1));
-
-            if (_hunit == 0 && _tunit == 0 && _nunit == 0)
-                return "";
-
-            switch (_tunit)
-            {
-                case 0:
-                    if (_nunit == 0)
-                        return String.Format("{0} trăm", OneNumber2Letter(_hunit));
-                    else
-                        return String.Format("{0} trăm lẻ {1}", OneNumber2Letter(_hunit), OneNumber2Letter(_nunit));
-                case 1:
-                    if (_nunit == 0)
-                        return String.Format("{0} trăm mười", OneNumber2Letter(_hunit));
-                    else
-                        return String.Format("{0} trăm mười {1}", OneNumber2Letter(_hunit), OneNumber2Letter(_nunit));
-                default:
-                    if (_nunit == 0)
-                        return String.Format("{0} trăm {1} mươi", OneNumber2Letter(_hunit), OneNumber2Letter(_tunit));
-                    else if (_nunit == 1)
-                        return String.Format("{0} trăm {1} mươi mốt", OneNumber2Letter(_hunit), OneNumber2Letter(_tunit));
-                    else if (_nunit == 4)
-                        return String.Format("{0} trăm {1} mươi tư", OneNumber2Letter(_hunit), OneNumber2Letter(_tunit));
-                    else
-                        return String.Format("{0} trăm {1} mươi {2}", OneNumber2Letter(_hunit), OneNumber2Letter(_tunit), OneNumber2Letter(_nunit));
-            }
+            return chuoi;
         }
-
-        private static string NumUnit(int _unit)
+        private static string DocHangTram(double so, bool daydu)
         {
-            switch (_unit)
+            string chuoi = "";
+            //Lấy số hàng trăm ví du 434 / 100 = 4 (hàm Floor sẽ làm tròn số nguyên bé nhất)
+            Int64 tram = Convert.ToInt64(Math.Floor((double)so / 100));
+            //Lấy phần còn lại của hàng trăm 434 % 100 = 34 (dư 34)
+            so = so % 100;
+            if (daydu || tram > 0)
             {
-                case 0:
-                case 1:
-                    return "";
-                case 2:
-                    return "nghìn";
-                case 3:
-                    return "triệu";
-                case 4:
-                    return "tỷ";
-                default:
-                    return String.Format("{0} {1}", NumUnit(_unit - 3), NumUnit(4));
+                chuoi = " " + mNumText[tram] + " trăm";
+                chuoi += DocHangChuc(so, true);
             }
+            else
+            {
+                chuoi = DocHangChuc(so, false);
+            }
+            return chuoi;
         }
-
-        private static string OneNumber2Letter(int _number)
+        private static string DocHangTrieu(double so, bool daydu)
         {
-            switch (_number)
+            string chuoi = "";
+            //Lấy số hàng triệu
+            Int64 trieu = Convert.ToInt64(Math.Floor((double)so / 1000000));
+            //Lấy phần dư sau số hàng triệu ví dụ 2,123,000 => so = 123,000
+            so = so % 1000000;
+            if (trieu > 0)
             {
-                case 0:
-                    return "không";
-                case 1:
-                    return "một";
-                case 2:
-                    return "hai";
-                case 3:
-                    return "ba";
-                case 4:
-                    return "bốn";
-                case 5:
-                    return "lăm";
-                case 6:
-                    return "sáu";
-                case 7:
-                    return "bảy";
-                case 8:
-                    return "tám";
-                case 9:
-                    return "chín";
-                default:
-                    return "";
+                chuoi = DocHangTram(trieu, daydu) + " triệu";
+                daydu = true;
             }
+            //Lấy số hàng nghìn
+            Int64 nghin = Convert.ToInt64(Math.Floor((double)so / 1000));
+            //Lấy phần dư sau số hàng nghin 
+            so = so % 1000;
+            if (nghin > 0)
+            {
+                chuoi += DocHangTram(nghin, daydu) + " nghìn";
+                daydu = true;
+            }
+            if (so > 0)
+            {
+                chuoi += DocHangTram(so, daydu);
+            }
+            return chuoi;
         }
-
-
+        public static string ChuyenSoSangChuoi(double so)
+        {
+            if (so == 0)
+                return mNumText[0];
+            string chuoi = "", hauto = "";
+            Int64 ty;
+            do
+            {
+                //Lấy số hàng tỷ
+                ty = Convert.ToInt64(Math.Floor((double)so / 1000000000));
+                //Lấy phần dư sau số hàng tỷ
+                so = so % 1000000000;
+                if (ty > 0)
+                {
+                    chuoi = DocHangTrieu(so, true) + hauto + chuoi;
+                }
+                else
+                {
+                    chuoi = DocHangTrieu(so, false) + hauto + chuoi;
+                }
+                hauto = " tỷ";
+            } while (ty > 0);
+            return chuoi + " đồng";
+        }
     }
+
+
 }

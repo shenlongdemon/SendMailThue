@@ -124,13 +124,13 @@ namespace SendMailThue
                     }
                     catch (Exception ex)
                     {
-                        ErrorUtils.ShowError(ex, true);
+                        ErrorUtils.ShowError(ex, "GetCompaniesFromExcelFile result", result);
                     }
                 });
             }
             catch (Exception ex)
             {
-                ErrorUtils.ShowError(ex, true);
+                ErrorUtils.ShowError(ex, "LoadCompaniesFromFile");
             }
         }
 

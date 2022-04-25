@@ -39,7 +39,9 @@ namespace SendMailThue
                     fieldValues.Add(cellValue);
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils GetValuesFromFile");
+            }
             finally
             {
                 closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
@@ -99,7 +101,13 @@ namespace SendMailThue
                     valueinGroup.Add(rang[0] + "-" + rang[1]);
                     groups.Add(valueinGroup);
                 }
-                callback(groups);
+                try
+                {
+                    callback(groups);
+                }
+                catch (Exception ex) {
+                    ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroup callback");
+                }
 
                 var t = new Thread(() =>
                 {
@@ -130,7 +138,9 @@ namespace SendMailThue
                 t.IsBackground = true;
                 t.Start();
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroup");
+            }
             finally
             {
 
@@ -142,46 +152,54 @@ namespace SendMailThue
         {
             
             List<int[]> ranges = new List<int[]>();
-            
-            int[] indexs = new int[2];
-            indexs[0] = -1;
-            int emptyRowCount = 0;
-            for (int i = 1; i < rowCount; i++)
+            try
             {
-                int emptyCells = 0;
-                for (int j = 1; j <= columnCount; j++)
+                int[] indexs = new int[2];
+                indexs[0] = -1;
+                int emptyRowCount = 0;
+                for (int i = 1; i < rowCount; i++)
                 {
-                    string cellValue = "";
-                    cellValue = Convert.ToString(values[i, j]);
-                    if (cellValue == "")
+                    int emptyCells = 0;
+                    for (int j = 1; j <= columnCount; j++)
                     {
-                        emptyCells++;
+                        string cellValue = "";
+                        cellValue = Convert.ToString(values[i, j]);
+                        if (cellValue == "")
+                        {
+                            emptyCells++;
+                        }
+                    }
+                    if (emptyCells == columnCount)
+                    {
+                        emptyRowCount++;
+                    }
+                    else
+                    {
+                        emptyRowCount = 0;
+                        if (indexs[0] == -1)
+                        {
+                            indexs[0] = i;
+                        }
+                    }
+
+                    if (emptyRowCount == spaceRowBetweenGroup)
+                    {
+                        indexs[1] = i - spaceRowBetweenGroup;
+                        ranges.Add(indexs);
+
+                        indexs = new int[2];
+                        indexs[0] = -1;
                     }
                 }
-                if (emptyCells == columnCount)
-                {
-                    emptyRowCount++;
-                }
-                else
-                {
-                    emptyRowCount = 0;
-                    if (indexs[0] == -1)
-                    {
-                        indexs[0] = i;
-                    }
-                }
-
-                if (emptyRowCount == spaceRowBetweenGroup)
-                {
-                    indexs[1] = i - spaceRowBetweenGroup;
-                    ranges.Add(indexs);
-
-                    indexs = new int[2];
-                    indexs[0] = -1;
-                }
+                indexs[1] = rowCount;
+                ranges.Add(indexs);
             }
-            indexs[1] = rowCount;
-            ranges.Add(indexs);
+            catch (Exception ex)
+            {
+                ErrorUtils.ShowError(ex, "ExcelUtils GetListOfRangeHasData");
+
+            }
+
 
             return ranges;
         }
@@ -213,7 +231,10 @@ namespace SendMailThue
                 xlWorkbook.Save();
 
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils SaveValuesToFile");
+
+            }
             finally
             {
                 closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
@@ -223,18 +244,25 @@ namespace SendMailThue
 
         private static void ClearRange(Excel.Worksheet xlWorksheet, Excel.Range xlRange, bool skipHeader)
         {
-            int rowCount = xlRange.Rows.Count;
-            int columnCount = xlRange.Columns.Count;
-            int a = skipHeader ? 2 : 1;
-
-            for (int i = a; i <= rowCount; i++)
+            try
             {
-                
-                for (int j = 1; j <= columnCount; j++)
+                int rowCount = xlRange.Rows.Count;
+                int columnCount = xlRange.Columns.Count;
+                int a = skipHeader ? 2 : 1;
+
+                for (int i = a; i <= rowCount; i++)
                 {
-                    Excel.Range cell = xlWorksheet.Cells[i , j];
-                    cell.Value = "";
+
+                    for (int j = 1; j <= columnCount; j++)
+                    {
+                        Excel.Range cell = xlWorksheet.Cells[i, j];
+                        cell.Value = "";
+                    }
                 }
+            }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils ClearRange");
+
             }
         }
 
@@ -278,7 +306,9 @@ namespace SendMailThue
                     groups.Add(valueinGroup);
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroupRow");
+            }
             finally
             {
                 closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
@@ -335,7 +365,9 @@ namespace SendMailThue
                     beginrow = beginrow + maxrows;
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils SplitToMultiFiles");
+            }
             finally
             {
                 closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
@@ -382,7 +414,9 @@ namespace SendMailThue
                     table.Add(vvv);
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) {
+                ErrorUtils.ShowError(ex, "ExcelUtils GetDataFromFile");
+            }
             finally
             {
                 closeExcel(xlApp, xlWorkbook, xlWorksheet, null);
@@ -402,11 +436,19 @@ namespace SendMailThue
             //release com objects to fully kill excel process from running in the background
             if (xlRange != null)
             {
-                Marshal.ReleaseComObject(xlRange);
+                try
+                {
+                    Marshal.ReleaseComObject(xlRange);
+                }
+                catch (Exception ex) { }
             }
             if (xlWorksheet != null)
             {
-                Marshal.ReleaseComObject(xlWorksheet);
+                try
+                {
+                    Marshal.ReleaseComObject(xlWorksheet);
+                }
+                catch (Exception ex) { }
             }
 
             //close and release
@@ -421,8 +463,11 @@ namespace SendMailThue
                 }
                 catch (Exception ex) { }
             }
-
-            Marshal.ReleaseComObject(xlApp);
+            try
+            {
+                Marshal.ReleaseComObject(xlApp);
+            }
+            catch (Exception ex) { }
         }
 
 
@@ -435,7 +480,8 @@ namespace SendMailThue
                     Marshal.ReleaseComObject(workbook);
                 }
             }
-            catch (Exception ex) { }
+            catch (Exception ex) { 
+            }
         }
     }
 

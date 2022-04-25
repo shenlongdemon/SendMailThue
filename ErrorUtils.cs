@@ -7,6 +7,16 @@ namespace SendMailThue
     public class ErrorUtils
     {
 
+        public static void ShowError(object ex,string info, params object []objs)
+        {
+            String s = $"{info} \nException={ex}\n";
+            
+            foreach (object obj in objs)
+            {
+                s += Newtonsoft.Json.JsonConvert.SerializeObject(obj) + "\n";
+            }
+            ShowError(s, true);
+        }
         public static void ShowError(object ex, bool newThead)
         {
             ShowError($"ThreadExceptionEventHandler - Exception={ex}", newThead);
@@ -16,6 +26,11 @@ namespace SendMailThue
         {
 
             ShowError(ex.GetTrace(), newThead);
+        }
+        public static void ShowError(Exception ex, string info, params object [] objs)
+        {
+
+            ShowError(ex.GetTrace(), info, objs);
         }
         
         public static void ShowError(string msg, bool newThead)

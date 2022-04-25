@@ -23,25 +23,28 @@ namespace SendMailThue
             string excelSplitDir = FileUtils.ExcelDir;
             string wordSplitDir = FileUtils.WordDir;
 
-            ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir, (result) => {
+            ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir, (result) =>
+            {
                 List<Company> companies = new List<Company>();
                 foreach (List<string> groupValues in result)
                 {
-                    Company company = GetCompanyFromValues(groupValues);
+                    List<string> processedGroup = groupValues.Select(p => p.Trim().Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Replace(System.Environment.NewLine, "")).ToList();
+                    Company company = GetCompanyFromValues(processedGroup);
                     if (company != null)
                     {
                         companies.Add(company);
                     }
                 }
                 callback(companies);
-                var t = new Thread(() => {
+                var t = new Thread(() =>
+                {
                     try
                     {
                         HandleDonDocWordFile(donDocWordFile, companies, wordSplitDir);
                     }
                     catch (Exception ex)
                     {
-                        ErrorUtils.ShowError(ex, true);
+                        ErrorUtils.ShowError(ex, "GetCompaniesFromExcelFile HandleDonDocWordFile", companies);
                     }
                 });
                 t.IsBackground = true;
@@ -63,21 +66,28 @@ namespace SendMailThue
         {
             List<List<string[]>> replaces = new List<List<string[]>>();
             DateTime now = DateTime.Now;
-            DateTime lastDateOfMonth = new DateTime (now.Year, now.Month,  DateTime.DaysInMonth(now.Year, now.Month));
+            DateTime lastDateOfMonth = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
             foreach (Company company in companies)
             {
-                List<string[]> replace = new List<string[]>();
-                replace.Add(new string[] { "{fileName}", company.Range + "" });
-                replace.Add(new string[] { "{day}", now.Day + "" });
-                replace.Add(new string[] { "{month}", (now.Month) + "" });
-                replace.Add(new string[] { "{year}", now.Year + "" });
-                replace.Add(new string[] { "{tendonvi}", company.TenDonVi + "" });
-                replace.Add(new string[] { "{now}", now.ToString("dd/MM/yyyy") });
-                replace.Add(new string[] { "{tongon}", Utility.FormatMoney(company.TongNo)});
-                replace.Add(new string[] { "{tongnobangchu}", Utility.ConvertMoneyToString(company.TongNo)});
-                replace.Add(new string[] { "{tongthangno}", company.TongSoThangNo + "" });
-                replace.Add(new string[] { "{lastdateofmonth}", lastDateOfMonth.ToString("dd/MM/yyyy") + "" });
-                replaces.Add(replace);
+                try
+                {
+                    List<string[]> replace = new List<string[]>();
+                    replace.Add(new string[] { "{fileName}", company.Range + "" });
+                    replace.Add(new string[] { "{day}", now.Day + "" });
+                    replace.Add(new string[] { "{month}", (now.Month) + "" });
+                    replace.Add(new string[] { "{year}", now.Year + "" });
+                    replace.Add(new string[] { "{tendonvi}", company.TenDonVi + "" });
+                    replace.Add(new string[] { "{now}", now.ToString("dd/MM/yyyy") });
+                    replace.Add(new string[] { "{tongon}", Utility.FormatMoney(company.TongNo) });
+                    replace.Add(new string[] { "{tongnobangchu}", Utility.ConvertMoneyToString(company.TongNo) });
+                    replace.Add(new string[] { "{tongthangno}", company.TongSoThangNo + "" });
+                    replace.Add(new string[] { "{lastdateofmonth}", lastDateOfMonth.ToString("dd/MM/yyyy") + "" });
+                    replaces.Add(replace);
+                }
+                catch (Exception ex)
+                {
+                    ErrorUtils.ShowError(ex, "HandleDonDocWordFile", company);
+                }
             }
             WordUtils.Replace(donDocWordFile, wordSplitDir, replaces);
         }
@@ -86,10 +96,11 @@ namespace SendMailThue
         {
             List<Company> companies = new List<Company>();
 
-            foreach(string file in files)
+            foreach (string file in files)
             {
                 Company company = GetCompanyFromFile(file);
-                if (company != null) {
+                if (company != null)
+                {
                     companies.Add(company);
                 }
             }
@@ -111,11 +122,11 @@ namespace SendMailThue
             try
             {
                 month = values[3].Substring(values[3].Length - 7, 7);
- 
+
             }
             catch (Exception ex) { }
 
-             try
+            try
             {
                 string[] ms = month.Split("/");
                 DateTime md = new DateTime(int.Parse(ms[1]), int.Parse(ms[0]), 1);
@@ -141,7 +152,7 @@ namespace SendMailThue
 
         }
 
-        public static Company GetCompanyFromFile(string file) 
+        public static Company GetCompanyFromFile(string file)
         {
             try
             {
@@ -154,7 +165,7 @@ namespace SendMailThue
                 };
                 List<string> values = ExcelUtils.GetValuesFromFile(file, fields);
                 return GetCompanyFromValues(values);
-                
+
             }
             catch (Exception ex) { }
             return null;
@@ -162,11 +173,12 @@ namespace SendMailThue
 
         public static List<CompanyEmail> GetCompanyEmailsFromFile(string file)
         {
-            
-            List<List<string>> table = ExcelUtils.GetDataFromFile(file, new int[] { 1,2}, true);
+
+            List<List<string>> table = ExcelUtils.GetDataFromFile(file, new int[] { 1, 2 }, true);
             List<CompanyEmail> companyEmails = new List<CompanyEmail>();
-            
-            foreach (List<string> row in table) {
+
+            foreach (List<string> row in table)
+            {
                 companyEmails.Add(new CompanyEmail { MaDonVi = row[0].ToString(), Email = row[1].ToString() });
             }
 
@@ -175,7 +187,7 @@ namespace SendMailThue
 
         public static void SaveCompanyEmailsToExcelFile(string companyEmailFile, List<CompanyEmail> companyEmails)
         {
-            List<string[]> values = companyEmails.Select(p => new string[] { p.MaDonVi, p.Email}).ToList();
+            List<string[]> values = companyEmails.Select(p => new string[] { p.MaDonVi, p.Email }).ToList();
             ExcelUtils.SaveValuesToFile(companyEmailFile, values, true);
         }
     }
