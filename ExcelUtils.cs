@@ -39,7 +39,8 @@ namespace SendMailThue
                     fieldValues.Add(cellValue);
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils GetValuesFromFile");
             }
             finally
@@ -105,7 +106,8 @@ namespace SendMailThue
                 {
                     callback(groups);
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroup callback");
                 }
 
@@ -125,7 +127,6 @@ namespace SendMailThue
                             rng.Copy(rngDest);
                             string outPath = outputDir + @"\" + rang[0] + "-" + rang[1] + "";
                             workbook.SaveAs(outPath, Excel.XlFileFormat.xlWorkbookNormal, System.Reflection.Missing.Value, System.Reflection.Missing.Value, false, false, Excel.XlSaveAsAccessMode.xlShared, false, false, System.Reflection.Missing.Value, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
-                            workbook.Close();
                             CloseWorkBook(workbook);
                         }
                     }
@@ -138,7 +139,8 @@ namespace SendMailThue
                 t.IsBackground = true;
                 t.Start();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroup");
             }
             finally
@@ -148,9 +150,9 @@ namespace SendMailThue
         }
 
 
-        private static List<int[]> GetListOfRangeHasData(Object[,] values, int rowCount, int columnCount, int spaceRowBetweenGroup) 
+        private static List<int[]> GetListOfRangeHasData(Object[,] values, int rowCount, int columnCount, int spaceRowBetweenGroup)
         {
-            
+
             List<int[]> ranges = new List<int[]>();
             try
             {
@@ -219,10 +221,10 @@ namespace SendMailThue
                 xlRange = xlWorksheet.UsedRange;
                 ClearRange(xlWorksheet, xlRange, skipHeader);
 
-                for (int i = 0; i < values.Count; i++) 
+                for (int i = 0; i < values.Count; i++)
                 {
                     string[] vs = values[i];
-                    for(int j = 0; j < vs.Length; j++)
+                    for (int j = 0; j < vs.Length; j++)
                     {
                         Excel.Range cell = xlWorksheet.Cells[i + (skipHeader ? 2 : 1), j + 1];
                         cell.Value = vs[j];
@@ -231,7 +233,8 @@ namespace SendMailThue
                 xlWorkbook.Save();
 
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils SaveValuesToFile");
 
             }
@@ -260,7 +263,8 @@ namespace SendMailThue
                     }
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils ClearRange");
 
             }
@@ -269,7 +273,7 @@ namespace SendMailThue
         public static List<List<string>> GetGroupValuesByGroupRow(string file, List<string> fields, int rowInGroup)
         {
             List<List<string>> groups = new List<List<string>>();
-      
+
             Excel.Application xlApp = null;
             Excel.Workbook xlWorkbook = null;
             Excel.Worksheet xlWorksheet = null;
@@ -306,7 +310,8 @@ namespace SendMailThue
                     groups.Add(valueinGroup);
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroupRow");
             }
             finally
@@ -360,12 +365,13 @@ namespace SendMailThue
                     string outPath = excelOutFilesFolderName + @"\out" + i + "";
                     workbook.SaveAs(outPath, Excel.XlFileFormat.xlWorkbookNormal, System.Reflection.Missing.Value, System.Reflection.Missing.Value, false, false, Excel.XlSaveAsAccessMode.xlShared, false, false, System.Reflection.Missing.Value, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
                     var misValue = Type.Missing;
-                    workbook.Close();
                     files.Add(outPath);
                     beginrow = beginrow + maxrows;
+                    CloseWorkBook(workbook);
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils SplitToMultiFiles");
             }
             finally
@@ -379,7 +385,7 @@ namespace SendMailThue
         public static List<List<string>> GetDataFromFile(string file, int[] vs, bool skipHeader)
         {
             List<List<string>> table = new List<List<string>>();
-        
+
             Excel.Application xlApp = null;
             Excel.Workbook xlWorkbook = null;
             Excel.Worksheet xlWorksheet = null;
@@ -393,7 +399,7 @@ namespace SendMailThue
                 int iRowCount = xlWorksheet.UsedRange.Rows.Count;
                 int countColumns = xlWorksheet.UsedRange.Columns.Count;
                 var values = (xlRange.Value as Object[,]);
-                
+
                 int a = skipHeader ? 2 : 1;
                 List<string> vvv = new List<string>();
                 for (int i = a; i <= iRowCount; i++)
@@ -414,7 +420,8 @@ namespace SendMailThue
                     table.Add(vvv);
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, "ExcelUtils GetDataFromFile");
             }
             finally
@@ -426,8 +433,13 @@ namespace SendMailThue
 
         private static void closeExcel(Excel.Application xlApp, Excel.Workbook xlWorkbook, Excel._Worksheet xlWorksheet, Excel.Range xlRange)
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+            try
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch (Exception ex) { }
+
 
             //rule of thumb for releasing com objects:
             //  never use two dots, all COM objects must be referenced and released individually
@@ -453,7 +465,7 @@ namespace SendMailThue
 
             //close and release
             CloseWorkBook(xlWorkbook);
-          
+
             //quit and release
             if (xlApp != null)
             {
@@ -471,7 +483,8 @@ namespace SendMailThue
         }
 
 
-        private static void CloseWorkBook(Excel.Workbook workbook) {
+        private static void CloseWorkBook(Excel.Workbook workbook)
+        {
             try
             {
                 if (workbook != null)
@@ -480,7 +493,8 @@ namespace SendMailThue
                     Marshal.ReleaseComObject(workbook);
                 }
             }
-            catch (Exception ex) { 
+            catch (Exception ex)
+            {
             }
         }
     }

@@ -43,9 +43,8 @@ namespace SendMailThue
                     }
                     string outFile = outDir + @"\" + fileName + ".doc";
                     document.SaveAs(outFile);
-                    document.Close();
-                    Marshal.ReleaseComObject(document);
                     outIndex++;
+                    CloseDocument(document);
                 }
             }
             catch (Exception ex)
@@ -63,25 +62,40 @@ namespace SendMailThue
             }
         }
 
+        private static void CloseDocument(Word.Document document)
+        {
+            try
+            {
+                if (document != null)
+                {
+                    document.Close();
+                    Marshal.ReleaseComObject(document);
+                }
+            }
+            catch (Exception ex)
+            { }
+        }
+
         private static void CloseWord(Word.Application application, Word.Document document)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-          
-            if (document != null)
-            {
-                document.Close();
-                Marshal.ReleaseComObject(document);
-            }
+
+            CloseDocument(document);
 
 
             //quit and release
-            if (application != null)
+            try
             {
-                application.Quit();
-                Marshal.ReleaseComObject(application);
-            }   
+                if (application != null)
+                {
+                    application.Quit();
+                    Marshal.ReleaseComObject(application);
+                }
+            }
+            catch (Exception ex)
+            { }
         }
     }
 }
