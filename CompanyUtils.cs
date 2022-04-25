@@ -110,46 +110,37 @@ namespace SendMailThue
 
         public static Company GetCompanyFromValues(List<string> values)
         {
-            Int64 tongNo = 0;
             try
             {
-                tongNo = Int64.Parse(values[2]);
-            }
-            catch (Exception ex) { }
+                Int64 tongNo = Int64.Parse(values[2]);
 
-            int tongThangNo = 0;
-            string month = values[3];
-            try
-            {
-                month = values[3].Substring(values[3].Length - 7, 7);
+                string month = values[3].Substring(values[3].Length - 7, 7);
 
-            }
-            catch (Exception ex) { }
-
-            try
-            {
                 string[] ms = month.Split("/");
                 DateTime md = new DateTime(int.Parse(ms[1]), int.Parse(ms[0]), 1);
                 DateTime now = DateTime.Now;
                 DateDiff dateDiff = new DateDiff(md, now);
-                tongThangNo = dateDiff.Months;
+                int tongThangNo = dateDiff.Months;
+
+                Company company = new Company
+                {
+                    Email = "",
+                    TenDonVi = values[0],
+                    MaDonVi = values[1],
+                    TongNo = tongNo,
+                    DaDongDenThang = month,
+                    TongSoThangNo = tongThangNo,
+                    AttachExcel = false,
+                    AttachWord = false,
+                    Range = values[4],
+                };
+                return company;
             }
-            catch (Exception ex) { }
-
-            Company company = new Company
+            catch (Exception ex) 
             {
-                Email = "",
-                TenDonVi = values[0],
-                MaDonVi = values[1],
-                TongNo = tongNo,
-                DaDongDenThang = month,
-                TongSoThangNo = tongThangNo,
-                AttachExcel = false,
-                AttachWord = false,
-                Range = values[4],
-            };
-            return company;
-
+                ErrorUtils.ShowError(ex, "Cannot parse company", values);
+            }
+            return null;
         }
 
         public static Company GetCompanyFromFile(string file)
