@@ -38,7 +38,7 @@ namespace SendMailThue
 
         private void SendMail()
         {
-            if (!chkExcelEmail.Checked || !chkWordEmail.Checked)
+            if (!chkExcelEmail.Checked && !chkWordEmail.Checked)
             {
                 return;
             }
@@ -72,11 +72,11 @@ namespace SendMailThue
         {
             try
             {
-                if (!chkExcelPrint.Checked || !chkWordPrint.Checked)
+                if (!chkWordPrint.Checked)
                 {
                     return;
                 }
-                List<Company> validCompanies = companies.Where((c) => c.Email != "" && (c.AttachExcel || c.AttachWord)).ToList();
+                List<Company> validCompanies = companies.Where((c) => c.Email != "" && c.AttachWord).ToList();
                 if (validCompanies.Count == 0)
                 {
                     return;
@@ -143,7 +143,8 @@ namespace SendMailThue
                 showCompanyEmailsLoading(false);
                 MMapMailCompany();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ErrorUtils.ShowError(ex, true);
             }
         }
@@ -437,9 +438,9 @@ namespace SendMailThue
 
         private void btnSendMail_Click(object sender, EventArgs e)
         {
-            //Thread sendMailTask = new Thread(new ThreadStart(this.SendMail));
-            //sendMailTask.IsBackground = true;
-            //sendMailTask.Start();  
+            Thread sendMailTask = new Thread(new ThreadStart(this.SendMail));
+            sendMailTask.IsBackground = true;
+            sendMailTask.Start();
 
             Thread printTask = new Thread(new ThreadStart(this.Print));
             printTask.IsBackground = true;
