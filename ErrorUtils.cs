@@ -13,7 +13,15 @@ namespace SendMailThue
             
             foreach (object obj in objs)
             {
-                s += Newtonsoft.Json.JsonConvert.SerializeObject(obj) + "\n\n\n";
+                if (obj is string)
+                {
+                    s += obj;
+                }
+                else
+                {
+                    s += Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+                }
+                s += "\n\t\r";
             }
             ShowError(s, true);
         }

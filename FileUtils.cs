@@ -45,6 +45,17 @@ namespace SendMailThue
             System.IO.File.Copy(fromPathFile, toPathFile, true);
             return toPathFile;
       }
-        
+
+        public static void WaitForFile(string file)
+        {
+            while (true)
+            {
+                if (File.Exists(file))
+                {
+                    break;
+                }
+                System.Threading.Thread.Sleep(1000);
+            }
+        }
     }
 }

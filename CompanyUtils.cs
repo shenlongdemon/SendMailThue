@@ -26,7 +26,7 @@ namespace SendMailThue
             ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir, (result) =>
             {
                 List<Company> companies = new List<Company>();
-                List<List<string>> errorGroupValues = new List<List<string>>();
+                string errorCompanies = "";
                 foreach (List<string> groupValues in result)
                 {
                     List<string> processedGroup = groupValues.Select(p => p.Trim().Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Replace(System.Environment.NewLine, "")).ToList();
@@ -40,11 +40,18 @@ namespace SendMailThue
                     }
                     catch (Exception ex) 
                     {
-                        errorGroupValues.Add(processedGroup);
+                        if (processedGroup.Count > 0) {
+                            errorCompanies += processedGroup[0];
+                        }
+                        else
+                        {
+                            errorCompanies += Newtonsoft.Json.JsonConvert.SerializeObject(processedGroup);
+                        }
+                        errorCompanies += System.Environment.NewLine + "\n";
                     }
                 }
-                if (errorGroupValues.Count > 0) {
-                    ErrorUtils.ShowError(new Exception("Cannot parse company"), "", errorGroupValues);
+                if (errorCompanies.Length > 0) {
+                    ErrorUtils.ShowError(new Exception("Cannot parse company"), "", errorCompanies);
                 }
                 callback(companies);
                 var t = new Thread(() =>

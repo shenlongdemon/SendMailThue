@@ -55,12 +55,14 @@ namespace SendMailThue
                 if (company.AttachExcel)
                 {
                     excelFile = CompanyUtils.GetCompanyExcelFile(company);
+                    FileUtils.WaitForFile(excelFile);
                     excelFile = FileUtils.CopyFile(excelFile, FileUtils.ExcelDir + @"\Thông báo kết quả.xls");
                 }
                 string wordFile = "";
                 if (company.AttachWord)
                 {
                     wordFile = CompanyUtils.GetCompanyWordFile(company);
+                    FileUtils.WaitForFile(wordFile);
                     wordFile = FileUtils.CopyFile(wordFile, FileUtils.WordDir + @"\Công văn đôn đốc.doc");
                 }
                 EmailUtils.SendGMail(company.Email, company.TenDonVi, "", new List<string> { excelFile, wordFile });
