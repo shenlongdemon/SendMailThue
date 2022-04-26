@@ -108,7 +108,7 @@ namespace SendMailThue
                 }
                 catch (Exception ex)
                 {
-                    ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroup callback");
+                   
                 }
 
                 var t = new Thread(() =>
@@ -141,7 +141,6 @@ namespace SendMailThue
             }
             catch (Exception ex)
             {
-                ErrorUtils.ShowError(ex, "ExcelUtils GetGroupValuesByGroup");
             }
             finally
             {

@@ -26,18 +26,31 @@ namespace SendMailThue
             ExcelUtils.GetGroupValuesByGroup(excelFile, fields, EMPTY_ROWS_BETWEEN_DONVI, excelSplitDir, (result) =>
             {
                 List<Company> companies = new List<Company>();
+                bool isShowError = false;
                 foreach (List<string> groupValues in result)
                 {
                     List<string> processedGroup = groupValues.Select(p => p.Trim().Replace("\r\n", "").Replace("\n", "").Replace("\r", "").Replace(System.Environment.NewLine, "")).ToList();
-                    Company company = GetCompanyFromValues(processedGroup);
-                    if (company != null)
+                    try
                     {
-                        companies.Add(company);
+                        Company company = GetCompanyFromValues(processedGroup);
+                        if (company != null)
+                        {
+                            companies.Add(company);
+                        }
+                    }
+                    catch (Exception ex) 
+                    {
+                        if (!isShowError)
+                        {
+                            ErrorUtils.ShowError(ex, "Cannot parse company", processedGroup);
+                        }
+                        isShowError = true;
                     }
                 }
                 callback(companies);
                 var t = new Thread(() =>
                 {
+                    
                     try
                     {
                         HandleDonDocWordFile(donDocWordFile, companies, wordSplitDir);
@@ -64,6 +77,7 @@ namespace SendMailThue
 
         private static void HandleDonDocWordFile(string donDocWordFile, List<Company> companies, string wordSplitDir)
         {
+            bool isShowError = false;
             List<List<string[]>> replaces = new List<List<string[]>>();
             DateTime now = DateTime.Now;
             DateTime lastDateOfMonth = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
@@ -86,81 +100,79 @@ namespace SendMailThue
                 }
                 catch (Exception ex)
                 {
-                    ErrorUtils.ShowError(ex, "HandleDonDocWordFile", company);
+                    if (!isShowError)
+                    {
+                        ErrorUtils.ShowError(ex, "HandleDonDocWordFile", company);
+                    }
+                    isShowError = true;
                 }
             }
             WordUtils.Replace(donDocWordFile, wordSplitDir, replaces);
         }
 
-        public static List<Company> GetCompaniesFromFiles(List<string> files)
-        {
-            List<Company> companies = new List<Company>();
+        //public static List<Company> GetCompaniesFromFiles(List<string> files)
+        //{
+        //    List<Company> companies = new List<Company>();
 
-            foreach (string file in files)
-            {
-                Company company = GetCompanyFromFile(file);
-                if (company != null)
-                {
-                    companies.Add(company);
-                }
-            }
+        //    foreach (string file in files)
+        //    {
+        //        Company company = GetCompanyFromFile(file);
+        //        if (company != null)
+        //        {
+        //            companies.Add(company);
+        //        }
+        //    }
 
-            return companies;
-        }
+        //    return companies;
+        //}
 
         public static Company GetCompanyFromValues(List<string> values)
         {
-            try
+
+            Int64 tongNo = Int64.Parse(values[2]);
+
+            string month = values[3].Substring(values[3].Length - 7, 7);
+
+            string[] ms = month.Split("/");
+            DateTime md = new DateTime(int.Parse(ms[1]), int.Parse(ms[0]), 1);
+            DateTime now = DateTime.Now;
+            DateDiff dateDiff = new DateDiff(md, now);
+            int tongThangNo = dateDiff.Months;
+
+            Company company = new Company
             {
-                Int64 tongNo = Int64.Parse(values[2]);
+                Email = "",
+                TenDonVi = values[0],
+                MaDonVi = values[1],
+                TongNo = tongNo,
+                DaDongDenThang = month,
+                TongSoThangNo = tongThangNo,
+                AttachExcel = false,
+                AttachWord = false,
+                Range = values[4],
+            };
+            return company;
 
-                string month = values[3].Substring(values[3].Length - 7, 7);
-
-                string[] ms = month.Split("/");
-                DateTime md = new DateTime(int.Parse(ms[1]), int.Parse(ms[0]), 1);
-                DateTime now = DateTime.Now;
-                DateDiff dateDiff = new DateDiff(md, now);
-                int tongThangNo = dateDiff.Months;
-
-                Company company = new Company
-                {
-                    Email = "",
-                    TenDonVi = values[0],
-                    MaDonVi = values[1],
-                    TongNo = tongNo,
-                    DaDongDenThang = month,
-                    TongSoThangNo = tongThangNo,
-                    AttachExcel = false,
-                    AttachWord = false,
-                    Range = values[4],
-                };
-                return company;
-            }
-            catch (Exception ex) 
-            {
-                ErrorUtils.ShowError(ex, "Cannot parse company", values);
-            }
-            return null;
         }
 
-        public static Company GetCompanyFromFile(string file)
-        {
-            try
-            {
-                List<string> fields = new List<string>
-                {
-                    "8-2", // ten don vi
-                    "10-2", // ma don vi
-                    "49-7", // chuyen ky sau tong no
-                    "55-1", // Kết quả đơn vị đã đóng BHXH bắt buộc cho 5 lao động đến hết tháng 12/2021						
-                };
-                List<string> values = ExcelUtils.GetValuesFromFile(file, fields);
-                return GetCompanyFromValues(values);
+        //public static Company GetCompanyFromFile(string file)
+        //{
+        //    try
+        //    {
+        //        List<string> fields = new List<string>
+        //        {
+        //            "8-2", // ten don vi
+        //            "10-2", // ma don vi
+        //            "49-7", // chuyen ky sau tong no
+        //            "55-1", // Kết quả đơn vị đã đóng BHXH bắt buộc cho 5 lao động đến hết tháng 12/2021						
+        //        };
+        //        List<string> values = ExcelUtils.GetValuesFromFile(file, fields);
+        //        return GetCompanyFromValues(values);
 
-            }
-            catch (Exception ex) { }
-            return null;
-        }
+        //    }
+        //    catch (Exception ex) { }
+        //    return null;
+        //}
 
         public static List<CompanyEmail> GetCompanyEmailsFromFile(string file)
         {

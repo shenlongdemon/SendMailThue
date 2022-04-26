@@ -42,21 +42,21 @@ namespace SendMailThue
 
         private static void UnhandledExceptionEventHandler(object sender, UnhandledExceptionEventArgs e)
         {
-            ErrorUtils.ShowError(e.ExceptionObject, true);
+            //ErrorUtils.ShowError(e.ExceptionObject, true);
             //new ErrorBox($"UnhandledExceptionEventHandler - Exception={e.ExceptionObject}").Show();
             //Console.WriteLine($"UnhandledExceptionEventHandler - Exception={e.ExceptionObject}");
         }
 
         private static void FirstChanceExceptionEventHandler(object sender, FirstChanceExceptionEventArgs e)
         {
-            ErrorUtils.ShowError(e.Exception, true);
+            //ErrorUtils.ShowError(e.Exception, true);
             //new ErrorBox($"FirstChanceExceptionEventHandler - Exception={e.Exception}").Show();
             //Console.WriteLine($"FirstChanceExceptionEventHandler - Exception={e.Exception}");
         }
 
         private static void ThreadExceptionEventHandler(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            ErrorUtils.ShowError(e.Exception, true);
+            //ErrorUtils.ShowError(e.Exception, true);
             //new ErrorBox($"ThreadExceptionEventHandler - Exception={e.Exception}").Show();
             //MessageBox.Show($"ThreadExceptionEventHandler - Exception={e.Exception}");
         }
