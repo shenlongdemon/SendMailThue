@@ -9,11 +9,11 @@ namespace SendMailThue
 
         public static void ShowError(object ex,string info, params object []objs)
         {
-            String s = $"{info} \nException={ex}\n";
+            String s = $"{info} \n\nException={ex}\n\n";
             
             foreach (object obj in objs)
             {
-                s += Newtonsoft.Json.JsonConvert.SerializeObject(obj) + "\n";
+                s += Newtonsoft.Json.JsonConvert.SerializeObject(obj) + "\n\n\n";
             }
             ShowError(s, true);
         }
