@@ -65,7 +65,7 @@ namespace SendMailThue
                     FileUtils.WaitForFile(wordFile);
                     wordFile = FileUtils.CopyFile(wordFile, FileUtils.WordDir + @"\Công văn đôn đốc.doc");
                 }
-                EmailUtils.SendGMail(company.Email, company.TenDonVi, "", new List<string> { excelFile, wordFile });
+                EmailUtils.SendGMail(company.Email, "hông báo kết quả đóng BHXH tháng " + DateTime.Now.ToString("MM/yyyy"), "", new List<string> { excelFile, wordFile });
             }
             showSendMailLoading(false);
 
