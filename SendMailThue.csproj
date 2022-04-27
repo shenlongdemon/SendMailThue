@@ -4,6 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Don_Doc_Thu_No</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

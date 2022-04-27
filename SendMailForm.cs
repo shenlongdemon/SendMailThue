@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Z.Expressions;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.IO;
@@ -49,6 +48,14 @@ namespace SendMailThue
             }
             showSendMailLoading(true);
 
+            string content = "Chuyên quản thu BHXH xin gửi Quý đơn vị Bảng chi tiết kết quả đóng " +
+                "BHXH, BHYT, BHTN, TNLĐ-BNN tính tới thời điểm hiện tại của đơn vị (theo mẫu C12-TS).\n" +
+                "Xin vui lòng bỏ qua thông báo này nếu đơn vị đã trích nộp đầy đủ BHXH, BHYT, BHTN, TNLĐ - BNN " +
+                "cho người lao động theo đúng quy định.\n" +
+                "Trong trường hợp có thắc mắc về số liệu trên mẫu C12-TS hoặc nội dung công văn đôn đốc thu nợ(nếu có), " +
+                "Quý đơn vị vui lòng liên hệ đối chiếu với chuyên quản phụ trách trực tiếp đơn vị mình.\n" +
+                "Xin cảm ơn!";
+
             foreach (Company company in validCompanies)
             {
                 string excelFile = "";
@@ -65,7 +72,7 @@ namespace SendMailThue
                     FileUtils.WaitForFile(wordFile);
                     wordFile = FileUtils.CopyFile(wordFile, FileUtils.WordDir + @"\Công văn đôn đốc.doc");
                 }
-                EmailUtils.SendGMail(company.Email, "hông báo kết quả đóng BHXH tháng " + DateTime.Now.ToString("MM/yyyy"), "", new List<string> { excelFile, wordFile });
+                EmailUtils.SendGMail(company.Email, "hông báo kết quả đóng BHXH tháng " + DateTime.Now.ToString("MM/yyyy"), content, new List<string> { excelFile, wordFile });
             }
             showSendMailLoading(false);
 
