@@ -148,7 +148,9 @@ namespace SendMailThue
             try
             {
                 showCompanyEmailsLoading(true);
-                companyEmails = CompanyUtils.GetCompanyEmailsFromFile(companyEmailFile);
+                if(companyEmailFile != "") {
+                    companyEmails = CompanyUtils.GetCompanyEmailsFromFile(companyEmailFile);
+                }
                 showCompanyEmailsLoading(false);
                 MMapMailCompany();
             }
@@ -241,15 +243,27 @@ namespace SendMailThue
             this.dgvCompany.Columns["AttachWord"].ReadOnly = true;
 
 
-            //int columnIndex = dgvCompany.Columns.Count;
-            //if (dgvCompany.Columns["Export"] == null)
-            //{
-            //    DataGridViewButtonColumn buttonColSaveAs = new DataGridViewButtonColumn();
-            //    buttonColSaveAs.Name = "Export";
-            //    buttonColSaveAs.Text = "Save As";
-            //    buttonColSaveAs.UseColumnTextForButtonValue = true;
-            //    dgvCompany.Columns.Insert(columnIndex, buttonColSaveAs);
-            //}
+            foreach (DataGridViewRow oRow in dgvCompany.Rows)
+            {
+                bool isAttachExcel = oRow.Cells["AttachExcel"].Value != null
+                                      && (bool)oRow.Cells["AttachExcel"].Value == true;
+
+                bool isAttachWord = oRow.Cells["AttachWord"].Value != null
+                                       && (bool)oRow.Cells["AttachWord"].Value == true;
+
+                if (isAttachExcel && isAttachWord)
+                {
+                    oRow.DefaultCellStyle.BackColor = Color.FromArgb(255, 179, 179);
+                }
+                else if (isAttachExcel)
+                {
+                    oRow.DefaultCellStyle.BackColor = Color.FromArgb(204, 255, 204);
+                }
+                else if (isAttachWord)
+                {
+                    oRow.DefaultCellStyle.BackColor = Color.FromArgb(179, 217, 255);
+                }
+            }
         }
         void UpdateCompanyEmailsDataSource()
         {
@@ -315,32 +329,6 @@ namespace SendMailThue
             if (!FileUtils.IsFileExist(donDocWordFile))
             {
                 File.WriteAllBytes(donDocWordFile, Storage.DonDocWordFile);
-            }
-        }
-
-        private void dgvCompany_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            DataGridViewRow oRow = dgvCompany.Rows[e.RowIndex];
-            if (dgvCompany.Columns[e.ColumnIndex].Name == "AttachExcel")
-            {
-                bool isAttachExcel = oRow.Cells["AttachExcel"].Value != null
-                                       && (bool)oRow.Cells["AttachExcel"].Value == true;
-
-                bool isAttachWord = oRow.Cells["AttachWord"].Value != null
-                                       && (bool)oRow.Cells["AttachWord"].Value == true;
-
-                if (isAttachExcel && isAttachWord)
-                {
-                    oRow.DefaultCellStyle.BackColor = Color.FromArgb(255, 179, 179);
-                }
-                else if (isAttachExcel)
-                {
-                    oRow.DefaultCellStyle.BackColor = Color.FromArgb(204, 255, 204);
-                }
-                else if (isAttachWord)
-                {
-                    oRow.DefaultCellStyle.BackColor = Color.FromArgb(179, 217, 255);
-                }
             }
         }
 
@@ -454,26 +442,6 @@ namespace SendMailThue
             Thread printTask = new Thread(new ThreadStart(this.Print));
             printTask.IsBackground = true;
             printTask.Start();
-        }
-
-        private void dgvCompany_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-        }
-
-        private void dgvCompany_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            //if (e.ColumnIndex == dgvCompany.Columns["Export"].Index)
-            //{
-            //    var row = dgvCompany.Rows[e.RowIndex];
-            //    string MaDonVi = row.Cells["MaDonVi"].Value.ToString();
-            //    string TenDonVi = row.Cells["TenDonVi"].Value.ToString();
-            //    string range = row.Cells["Range"].Value.ToString();
-            //    exportFileDialog.FileName = MaDonVi + "-" + TenDonVi;
-            //    if (exportFileDialog.ShowDialog() == DialogResult.OK)
-            //    {
-            //        ExportFiles(range, exportFileDialog.FileName);
-            //    }
-            //}
         }
 
         private void ExportFiles(string fromFileName, string savePath)

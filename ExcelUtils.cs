@@ -421,7 +421,7 @@ namespace SendMailThue
             }
             catch (Exception ex)
             {
-                ErrorUtils.ShowError(ex, "ExcelUtils GetDataFromFile");
+                ErrorUtils.ShowError(ex, "ExcelUtils GetDataFromFile file = " + file);
             }
             finally
             {
